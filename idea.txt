@@ -1,0 +1,43 @@
+struct x {
+    int x;
+    char y;
+}
+
+[(int:x:value), (char:y:value)]
+
+//modules -> name with functions and values
+[] is a module
+
+Module moduleName
+    Function ...
+    Vars..
+
+module::moduleFunction
+module::moduleVariable (readonly)
+
+//list initialization
+list : [Int]
+[1, 3, 4, 5] list : [Int]
+[1 to 5] list : [Int]
+[1 to 5 every 2] list : [Int] //1, 3, 5
+
+[] list : [Function]
+[function_name] list : [Function]
+[function_name, function_name] list : [Function]
+
+
+
+
+//fuction initialization
+Function function_name (list : [Int], var : Int) -> Int
+    for x in list
+        std::out < x < std::space < std::endl
+
+    for (i = 0; i < []::length(list); i += 1)
+        std::out << []::at(list, i) << std::space << std::endl
+
+Function function_name ()
+
+read(list, EOF)
+
+
