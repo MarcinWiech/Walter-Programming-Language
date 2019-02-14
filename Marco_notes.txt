@@ -148,3 +148,48 @@ Module MAIN_MODULE: import LinkedList
 
 
 --------------------------------------------------------------------------------------------------------------------------------------------------------
+
+Agree: I am not gonna lie, I like the whole module::function(args) thign, it keeps things tidy. What I don't like is the fact that is not specific to the
+usecase of the coursework. So, here I will try to narrow the usecase. (also, the whole printing thing is pretty ugly, although tidy I reckon!).
+
+
+Type Node : <Template T>
+    data : T         //decide the type on initialization
+    next : Node
+
+Type LinkedList : <Template T>
+    head : Node<T>
+    tail : Node<T>
+    size : Int
+
+Module : LinkedList<T>
+
+    Routine data_at (llist : LinkedList<T>, index : Int) -> T | Exception
+        
+        Routine _data_at (node : Node<T>, index : Int) -> T | Exception
+            case index == 0 -> node.data
+            case node == ? -> Exception
+            case any -> _data_at (node.next, index - 1)
+
+        auto tmp = _data_at (llist.head, index)
+        -> tmp
+
+        //or simply
+     // -> _data_at (llist.head, index)
+
+
+Module MAIN_MODULE: import LinkedList
+    myList : LinkedList<Int> //here is how you init the template
+
+    //I can do:
+    myList.head
+    myList.lenght
+    LinkedList::data_at(myList, 3)
+
+    //print
+    std::print < LinkedList::data_at(myList, 3) < std::space < std:endl
+
+
+
+
+
