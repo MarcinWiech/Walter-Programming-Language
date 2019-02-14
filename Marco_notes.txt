@@ -181,7 +181,7 @@ Module : LinkedList<T>
 Module MAIN_MODULE: import LinkedList
     myList : LinkedList<Int> //here is how you init the template
 
-    //I can do:
+    //I can do
     myList.head
     myList.lenght
     LinkedList::data_at(myList, 3)
@@ -190,6 +190,47 @@ Module MAIN_MODULE: import LinkedList
     std::print < LinkedList::data_at(myList, 3) < std::space < std:endl
 
 
+--------------------------------------------------------------------------------------------------------------------------------------------------------
 
+Templates are good if we are to generate streams of not only integers but maybe tuple of integers:
+
+Type Row 
+{
+    fst : Int
+    snd : Int
+    trd : Int
+}
+
+and then in main module:
+myList : [Row]
+
+which allows for:
+
+Routine processRows (list : [Row]) -> Int
+    case [] -> 0
+    case [r:rs] -> r.fst + r.snd + r.trd + processRows(rs) 
+
+so here [r:rs] is just like Haskell's list pattern matching, BUT!!! we don't need to match the type! in this case 'case' will need to include matches for all the parameters of the function
+
+If I need to check conditions or do operations on the type: (stupid example)
+
+Routine processRows (list : [Row]) -> Int
+    case [] -> 0
+    case [r:rs]
+        case r.fst == 0
+            -> r.snd + r.trd + processRows(rs)
+        case any
+            -> r.fst + r.snd + r.trd + processRows(rs) 
+        
+Mind you I can always use for loops:
+
+Routine processRows (list : [Row]) -> Int
+    sum : Int = 0
+    for r in list
+        sum += r.fst + r.snd + r.trd
+    -> sum
+
+
+--------------------------------------------------------------------------------------------------------------------------------------------------------
 
 
