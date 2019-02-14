@@ -1,0 +1,150 @@
+> Programs consists of STATIC MODULES which contain: static variables and static routines. 
+  Variables unique to an instance of a module are accessable by the use of a static routines of the module of that instance.
+  Private routines are possible in the form of inner routines only (shit though)
+  For Example:
+
+Module LinkedList_Node
+    //Instance's values -> define the type -> THESE ARE PRIVATE, ACCESSABILE ONLY BY THE MODULE'S ROUTINES
+    {
+        data : Int
+        next : LinkedList_Node
+    }
+
+    Routine get_data (node : LinkedList_Node) -> Int
+        case node == ?          //? = no reference: null
+            -> NULL_PTR         // -> means return
+        case any                // case any means otherwise in haskellß
+            -> node.data
+
+    Routine get_next (node : LinkedList_Node) -> LinkedList_Node | LinkedList_Node::NULL_PTR
+        case node == ?
+            -> NULL_PTR
+        case any
+            -> node.next
+
+    Routine set_next (node : LinkedList_Node, to_append : LinkedList_Node) -> NULL_PTR
+        case node == ? || to_append == ?
+            -> NULL_PTR
+        case any
+            -> node.next = to_appendß
+
+
+Module LinkedList: import LinkedList_Node
+
+    {
+        length : Int
+        head : LinkedList_Node
+        tail : LinkedList_Node
+    }
+
+    //static variables
+    NULL_LINKED_LIST : Exeption = NULL_LINKED_LIST
+
+    //static routines
+    Routine data_at (llist : LinkedList, index : Int) -> Int | LinkedList::NULL_LINKED_LIST
+
+        case llist == ?
+            -> NULL_LINKED_LIST
+
+        Routine _data_at (node : LinkedList_Node, index : Int) -> Int | LinkedList_Node::NULL_PTR
+            case node == ?
+                -> LinkedList_Node::NULL_PTR
+            case index > 0
+                -> _data_at (LinkedList_Node::get_next(node), index - 1)
+            case index == 0
+                -> LinkedList_Node::get_data(node)
+
+        tmp : auto = _data_at(llist.head, index)    //auto means: Int | LinkedList_Node::NULL_PTR, the same type of the routine _data_at
+        case tmp == LinkedList_Node::NULL_PTR
+            -> NULL_LINKED_LIST
+        case any
+            -> tmp
+
+    Routine get_size (llist : LinkedList) -> Int
+        -> llist.lenght
+
+Module MAIN_MODULE: import LinkedList
+    myList : LinkedList
+
+    //cannot do:
+    myList.head
+    myList.lenght
+
+    //i can do
+    LinkedList::data_at(myList, 0)
+    LinkedList::get_size(myList)
+
+    //stdio is a module for printing on screen
+    stdio::out << LinkedList::data_at(myList, 0) << stdio::space << stdio::endl
+
+
+--------------------------------------------------------------------------------------------------------------------------------------------------------
+
+//variable initialization
+x : Type
+x : Int = 9
+
+//list initialization
+list_name : [Type]
+list_name : [Int]
+list_name : [Int] = [1, 3, 4, 5]
+list_name : [Int] = [1 to 5]
+list_name : [Int] = [1 to 5 every 2] //1, 3, 5
+
+--------------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+IN A WORLD WITHOUT EXCEPTIONS THINGS ARE NICER? OR SHITTIER? UMM.. compiler needs to be strong
+
+Module LinkedList_Node
+    {
+        data : Int
+        next : LinkedList_Node
+    }
+
+    Routine get_data (node : LinkedList_Node) -> Int
+        -> node.data
+
+    Routine get_next (node : LinkedList_Node) -> LinkedList_Node
+        -> node.next
+
+    Routine set_next (node : LinkedList_Node, to_append : LinkedList_Node)
+            node.next = to_appendß
+
+
+Module LinkedList: import LinkedList_Node
+    {
+        length : Int
+        head : LinkedList_Node
+        tail : LinkedList_Node
+    }
+
+    Routine data_at (llist : LinkedList, index : Int) -> Int
+
+        Routine _data_at (node : LinkedList_Node, index : Int) -> Int
+            case index > 0
+                -> _data_at (LinkedList_Node::get_next(node), index - 1)
+            case index == 0
+                -> LinkedList_Node::get_data(node)
+
+        -> _data_at(llist.head, index)
+
+    Routine get_size (llist : LinkedList) -> Int
+        -> llist.lenght
+
+Module MAIN_MODULE: import LinkedList
+    myList : LinkedList
+
+    //cannot do:
+    myList.head
+    myList.lenght
+
+    //i can do
+    LinkedList::data_at(myList, 0)
+    LinkedList::get_size(myList)
+
+    //stdio is a module for printing on screen
+    stdio::out << LinkedList::data_at(myList, 0) << stdio::space << stdio::endl
+
+
+--------------------------------------------------------------------------------------------------------------------------------------------------------
