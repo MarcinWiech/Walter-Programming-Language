@@ -167,7 +167,7 @@ Module : LinkedList<T>
     Routine data_at (llist : LinkedList<T>, index : Int) -> T | Exception
         
         Routine _data_at (node : Node<T>, index : Int) -> T | Exception
-            case index == 0 -> node.data
+            if index == 0 -> node.data
             case node == ? -> Exception
             case any -> _data_at (node.next, index - 1)
 
@@ -188,6 +188,15 @@ Module MAIN_MODULE: import LinkedList
 
     //print
     std::print < LinkedList::data_at(myList, 3) < std::space < std:endl
+
+Public class list
+{
+	public int size;
+
+	public static void append(Node new node, List list)
+		list += newNode
+		sie++
+}
 
 
 --------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -217,7 +226,7 @@ If I need to check conditions or do operations on the type: (stupid example)
 Routine processRows (list : [Row]) -> Int
     case [] -> 0
     case [r:rs]
-        case r.fst == 0
+        If r.fst == 0
             -> r.snd + r.trd + processRows(rs)
         case any
             -> r.fst + r.snd + r.trd + processRows(rs) 
@@ -234,4 +243,35 @@ Routine processRows (list : [Row]) -> Int
 should we perhaps change the keyword case to match (or something else) when it is meant to match the parameters?
 --------------------------------------------------------------------------------------------------------------------------------------------------------
 
+Type Node : <Template T>
+    data : T         //decide the type on initialization
+    next : Node
 
+Type LinkedList : <Template T>
+    head : Node<T>
+    tail : Node<T>
+    size : Int
+
+Module : LinkedList<T>
+
+    Routine _data_at (node : Node<T>, index : Int) -> T | NULL
+            case index == 0 -> node.data
+            case node == ? -> Exception
+            case any -> _data_at (node.next, index - 1)
+
+
+    Routine data_at (llist : LinkedList<T>, index : Int) -> T | NULL
+        AUTO tmp = _data_at (llist.head, index)
+	  AUTO(tmp):NULL
+		landcljandcljnadc
+	  AUTO(tmp):T
+		adckladlckmadlckm
+
+
+Module MAIN_MODULE: import LinkedList
+    myList : LinkedList<Int> //here is how you init the template
+
+    //I can do
+    myList.head
+    myList.size
+    LinkedList::data_at(myList, 3)
