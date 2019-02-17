@@ -45,8 +45,5 @@ Module : List<T>
                 node = node.next
             data : T = node.data
             node.next = node.next.next
-            //memory leak
+            //garbage collector xD
             -> data
-            
-	
-
