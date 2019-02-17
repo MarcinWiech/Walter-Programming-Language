@@ -1,0 +1,52 @@
+Type Node : <Template T>
+    data : T         //decide the type on initialization
+    next : Node
+
+Type List : <Template T>
+    root : Node<T>
+    tail : Node<T>
+    "private" size : Int
+
+Module : List<T>
+    
+    Function append (list : List<T>, data : T)
+        tempNode : Node<T>
+        tempNode.data = data
+
+        if(list.head == NULL)    
+	    list.head = tempNode
+	    list.tail = list.head
+
+	else
+        list.tail.next = tempNode
+	    list.tail = tempNode
+
+    list.size = list.size+1
+            
+    Function get(list : List<T>, index : Int) -> T | NULL ?????????
+        if(index > list.size) -> NULL
+
+        node : Node<T> = list.head
+        for (i : 0, index, 1)
+            node = node.next
+        -> node.data
+
+    Function remove(list : List<T>, index : Int) -> T | NULL ???
+        if(index > list.size) -> NULL
+
+        if(index == list.size-1)
+            data : T = list.tail.data
+            list.tail = NULL
+            -> data
+        
+        else
+            node : Node<T> = list.head
+            for (i : 0, index-1, 1)
+                node = node.next
+            data : T = node.data
+            node.next = node.next.next
+            //memory leak
+            -> data
+            
+	
+
