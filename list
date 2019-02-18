@@ -1,8 +1,8 @@
-Type Node : <Template T>
+Type Node : <T>
     data : T         //decide the type on initialization
     next : Node
 
-Type List : <Template T>
+Type List : <T>
     root : Node<T>
     tail : Node<T>
     "private" size : Int
@@ -47,3 +47,26 @@ Module : List<T>
             node.next = node.next.next
             //garbage collector xD
             -> data
+
+Type Row : <>
+    left : Int
+    right : Int
+
+Main
+
+    list : List<Int>
+    List::append(list, 3)
+    Std::out << List::get(list,0) << Std::endl
+
+    c : Int << Std::in
+    while (c != EOF)
+        List::append(list, c)
+        c << Std::in
+
+    
+    Int > < => <= + - * / [%]  
+    Bool, Int, Typerefs, NULL == !=
+    : ::
+    ->
+
+    //if,for, Main, Module, Type with brackets or not, NULL assignable to types (typechecking)
