@@ -65,11 +65,14 @@ Main
 
 
 > Comments
-    //statements
+    //comment on one line
 
 > statements
     - inits
     - functionCalls -> functionName(args) or ModuleName::functionName(args)
     - assignements
+    - reference copy
     - operators
-    - Std::whatever (<< | >>)
+    - custon type variable access (eg: myRow.fst)
+    - return statement
+    - Std::whatever (<< or >>)
