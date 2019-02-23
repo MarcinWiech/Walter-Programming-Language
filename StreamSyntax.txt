@@ -1,17 +1,55 @@
+Problem1:
+{
+    var1: Int = 0
+}
+[a : Int] = [var1];
+            var1 = a 
+
+Problem2:
+[a : Int] = [a, a]
+
 Problem3:
-[a b c] = [a + 3b + c]
+[a : Int, b : Int] = [a + 3b]
 
+Problem4:
+{
+    var1 : Int = 0
+}
+[a : Int] = [a+var1]
+            var1 = a
 
+Problem5: 
+{
 Var1 : Int = 0
 Var2 : Int = 0
-Problem5: 
+}
+[eof]
 [] = [1]
 [a : Int] = [var1 + var2 + a]
-	    var2 = var1
+	        var2 = var1
             var1 = a + var2
 
 Fun:
-[a, b, c] = [a+1, b+1, c+1]
+[a : Int] = [a+1]
+
+Smaller:
+{
+    result : Bool;
+}
+[a , b] =   if(a < b):
+                result = true
+            else:
+                result = false
+
+            [result]
+
+Func:
+[a : Int, b : Int] = if ([a, b] >> Computation):
+                        [a + 3b]
+                        x : Int = ([a, b] >> Computation2)
+                        [a, b]
+                    else:
+                        [a + b]
 
 Main:
     stdin >> Problem5 >> Fun >> stdout
