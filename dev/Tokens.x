@@ -39,6 +39,8 @@ $white+       ;
   Main          { tok (\p s -> TokenMain p) }
   true          { tok (\p s -> TokenTrueValue p) }
   false         { tok (\p s -> TokenFalseValue p) }
+  "=="          { tok (\p s -> TokenCompare p) }
+  \!            { tok (\p s -> TokenNot p) }
 
   $alphaS [$alphaS $digit \_ \’]*   { tok (\p s -> TokenVar p s) }
   $alphaC [$alpha $digit \_ \’]*   { tok (\p s -> TokenFuncName p s) }
@@ -76,6 +78,8 @@ data Token =
   TokenMain AlexPosn            |
   TokenSemiColon AlexPosn       |
   TokenTrueValue AlexPosn       |
+  TokenCompare AlexPosn         |
+  TokenNot AlexPosn             |
   TokenFalseValue AlexPosn
   deriving (Eq,Show) 
 
@@ -107,5 +111,7 @@ tokenPosn (TokenMain (AlexPn a l c)) = show(l) ++ ":" ++ show(c)
 tokenPosn (TokenSemiColon (AlexPn a l c)) = show(l) ++ ":" ++ show(c)
 tokenPosn (TokenTrueValue (AlexPn a l c)) = show(l) ++ ":" ++ show(c)
 tokenPosn (TokenFalseValue (AlexPn a l c)) = show(l) ++ ":" ++ show(c)
+tokenPosn (TokenCompare (AlexPn a l c)) = show(l) ++ ":" ++ show(c)
+tokenPosn (TokenNot (AlexPn a l c)) = show(l) ++ ":" ++ show(c)
 
 }

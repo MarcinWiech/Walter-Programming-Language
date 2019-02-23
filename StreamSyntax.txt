@@ -20,8 +20,8 @@ Problem4:
 
 Problem5: 
 {
-Var1 : Int = 0
-Var2 : Int = 0
+var1 : Int = 0
+var2 : Int = 0
 }
 [eof]
 [] = [1]
