@@ -39,8 +39,6 @@ import Tokens
     '=='       { TokenCompare _ }
     '!'         { TokenNot _ }
 
-
-%right in 
 %left '+' '-' 
 %left '*' '/'
 %% 
@@ -49,27 +47,50 @@ Exp : Exp '+' Exp            { Plus $1 $3 }
     | Exp '*' Exp            { Times $1 $3 } 
     | Exp '/' Exp            { Div $1 $3 }
     | '(' Exp ')'            { $2 }
-    | intValue               {}
+    | Match                  { LOL $1 }
 
-Type :  boolType { TBool }
-     |  intType  { TInt }
+T :  boolType { TBool }
+  |  intType  { TInt }
 
+B : trueValue { True }
+  | falseValue { False }
 
-    
+Var : var ':' T { Var_ $1 $3 }
+
+VarInit : Var '=' intValue { VarIntInit_ $1 $3}
+        | Var '=' B { VarBoolInit_ $1 $3}
+        | Var '=' var { VarStrInit_ $1 $3}
+
+Match : '['']'         { EmptyMatch }
+      | '[' Var ']'    { SingleMatch $2 }
+      | '[' Var ',' MatchRec   { MultipleMatch $2 $4 }
+
+MatchRec : Var ']'    { SingleMatch $1 }
+         | Var ',' MatchRec     {MultipleMatch $1 $3 }
 { 
 parseError :: [Token] -> a
 parseError [] = error "Unknown Parse Error" 
 parseError (t:ts) = error ("Parse error at line:column " ++ (tokenPosn t))
-data Type = TInt
-         | TBool
-data BasicValue = Int | Bool
-data Var = Var String Type
---data VarInit = VarInit Var BasicValue | VarInit Var String -- see if var1 : Bool = 3
 
-data Exp = Let String Exp Exp 
-         | Plus Exp Exp 
-         | Minus Exp Exp 
-         | Times Exp Exp 
-         | Div Exp Exp 
-         deriving Show 
+data T_ = TInt | TBool | TFunc T_ T_ deriving Show
+
+data Var_ = Var_ String T_ deriving Show
+
+data VarInit_ = VarIntInit_ Var_ Int 
+              | VarStrInit_ Var_ String 
+              | VarBoolInit_ Var_ Bool 
+              deriving Show
+
+data Match_ = EmptyMatch 
+            | MultipleMatch Var_ Match_ 
+            | SingleMatch Var_
+            deriving Show
+
+data Exp_ = Let String Exp_ Exp_ 
+           | Plus Exp_ Exp_ 
+           | Minus Exp_ Exp_ 
+           | Times Exp_ Exp_ 
+           | Div Exp_ Exp_
+           | LOL Match_ 
+           deriving Show
 } 

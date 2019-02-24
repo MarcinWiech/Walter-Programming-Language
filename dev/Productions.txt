@@ -1,0 +1,6 @@
+T := TInt |  TBool | TFunc T T
+
+Var := String : T
+VarInit = Var = Int | Var = String | Var = Bool
+
+Match := [ ] | [(Var,)* Var]

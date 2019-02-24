@@ -42,7 +42,7 @@ $white+       ;
   "=="          { tok (\p s -> TokenCompare p) }
   \!            { tok (\p s -> TokenNot p) }
 
-  $alphaS [$alphaS $digit \_ \’]*   { tok (\p s -> TokenVar p s) }
+  $alphaS [$alpha $digit \_ \’]*   { tok (\p s -> TokenVar p s) }
   $alphaC [$alpha $digit \_ \’]*   { tok (\p s -> TokenFuncName p s) }
 { 
 -- Each action has type :: AlexPosn -> String -> Token 
