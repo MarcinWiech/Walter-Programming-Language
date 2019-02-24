@@ -28,7 +28,7 @@ import Tokens
     ',' { TokenComma _ }
     '>>' { TokenPipe _ }
     intType    { TokenTypeInt _ }
-    eof        { TokenEOF _ }
+    eof        { TokenEOF _ } -- in reality EOF
     boolType   { TokenTypeBool _ }
     ';'        { TokenSemiColon _ }
     if         { TokenIf _ }
@@ -44,7 +44,10 @@ import Tokens
 %% 
 Exp : Maths                  { MathsExp $1 }
     | '(' Exp ')'            { $2 }
-    | Match                  { LOL $1 }
+    | VarInit                { VarInitExp $1 }
+    | Match                  { LOL $1 } -- this will need to be refactored into the '=' production
+    | OutPattern             { LOL1 $1 } -- &...
+    | Exp ';' Exp            { SequenceExpr $1 $3 } -- this will only appear on the left of a match statement -> refactor then
 
 Maths : Maths '+' Maths      { MathsPlus $1 $3 }
       | Maths '-' Maths      { MathsMinus $1 $3 }
@@ -63,16 +66,24 @@ B : trueValue { True }
 Var : var ':' T { Var_ $1 $3 }
 
 VarInit : Var '=' intValue { VarIntInit_ $1 $3}
-        | Var '=' B { VarBoolInit_ $1 $3}
-        | Var '=' var { VarStrInit_ $1 $3}
+        | Var '=' B        { VarBoolInit_ $1 $3}
+        | Var '=' var      { VarStrInit_ $1 $3}
 
-Match : '['']'         { EmptyMatch }
-      | '[' eof ']'    { EOFMatch }
-      | '[' Var ']'    { SingleMatch $2 }
+Match : '['']'                 { EmptyMatch }
+      | '[' eof ']'            { EOFMatch }
+      | '[' Var ']'            { SingleMatch $2 }
       | '[' Var ',' MatchRec   { MultipleMatch $2 $4 }
 
-MatchRec : Var ']'    { SingleMatch $1 }
-         | Var ',' MatchRec     {MultipleMatch $1 $3 }
+MatchRec : Var ']'           { SingleMatch $1 }
+         | Var ',' MatchRec  {MultipleMatch $1 $3 }
+
+OutPattern : '['']'                        { EmptyOutPatter }
+           | '[' Maths ']'                 { SingleOutPattern $2 }
+           | '[' Maths ',' OutPatternRec   { MultipleOutPattern $2 $4 }
+
+OutPatternRec : Maths ']'                   { SingleOutPattern $1 }
+              | Maths ',' OutPatternRec     {MultipleOutPattern $1 $3 }
+
 { 
 parseError :: [Token] -> a
 parseError [] = error "Unknown Parse Error" 
@@ -93,8 +104,11 @@ data Match_ = EmptyMatch
             | SingleMatch Var_
             deriving Show
 
-data Exp_ = MathsExp Maths_
-          | LOL Match_
+data Exp_ = SequenceExpr Exp_ Exp_
+          | MathsExp Maths_
+          | LOL Match_ -- see comment
+          | LOL1 OutPattern_
+          | VarInitExp VarInit_ -- see comment
            deriving Show
 
 data Maths_ = MathsPlus Maths_ Maths_
@@ -104,4 +118,11 @@ data Maths_ = MathsPlus Maths_ Maths_
             | MathsInt Int
             | MathsVar String
             deriving Show
-} 
+
+data OutPattern_ = EmptyOutPatter
+                | MultipleOutPattern Maths_ OutPattern_ 
+                | SingleOutPattern Maths_
+                deriving Show
+
+
+}
