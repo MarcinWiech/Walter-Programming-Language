@@ -112,6 +112,8 @@ ComparableExp : ComparableExp '==' ComparableExp { EqualsToLR $1 $3 }
               | Comparables '>' ComparableExp    { GreaterThanR $1 $3 }
               | Comparables '>' Comparables      { GreaterThan $1 $3 }
 
+              | '!' ComparableExp                { Not $2 }
+
               | '(' ComparableExp ')'            { $2 }
               | var                              { ComparableExpVar $1 }
               | B                                { ComparableExpBool $1 }
@@ -185,6 +187,8 @@ data ComparableExp_ = EqualsTo Comparables_ Comparables_
                     | GreaterThanR Comparables_ ComparableExp_
                     | GreaterThanL ComparableExp_ Comparables_
                     | GreaterThanLR ComparableExp_ ComparableExp_
+
+                    | Not ComparableExp_
 
                     | ComparableExpVar String
                     | ComparableExpBool Bool
