@@ -149,12 +149,9 @@ data Match_ = EmptyMatch
             | SingleMatch Var_
             deriving Show
 
-data Exp_ = SequenceExp Exp_ Exp_
-          | MathsExp Maths_
+data Exp_ = CondExp Cond_
           | EqualsExp Equals_
-          | VarInitExp VarInit_ -- see comment
-          | CondExp Cond_
-          | LOL FuncDeclaration_
+          | SequenceExp Exp_ Exp_
            deriving Show
 
 data Maths_ = MathsPlus Maths_ Maths_
