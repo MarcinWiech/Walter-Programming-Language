@@ -42,11 +42,10 @@ import Tokens
 %left '+' '-' 
 %left '*' '/'
 %% 
-Exp : Maths                  { MathsExp $1 }
+Exp : Equals                 { EqualsExp $1 }
+    | Maths                  { MathsExp $1 }
     | '(' Exp ')'            { $2 }
     | VarInit                { VarInitExp $1 }
-    | Match                  { LOL $1 } -- this will need to be refactored into the '=' production
-    | OutPattern             { LOL1 $1 } -- &...
     | Exp ';' Exp            { SequenceExpr $1 $3 } -- this will only appear on the left of a match statement -> refactor then
 
 Maths : Maths '+' Maths      { MathsPlus $1 $3 }
@@ -56,6 +55,12 @@ Maths : Maths '+' Maths      { MathsPlus $1 $3 }
       | '(' Maths ')'        { $2 }
       | intValue             { MathsInt $1 }
       | var                  { MathsVar $1 }
+
+Equals : Match '=' OutPattern { EqualsInOut $1 $3 }
+       | Match '=' Maths      { EqualsInMaths $1 $3 }
+       | var '=' Maths        { EqualsVarMaths $1 $3 }
+       | var '=' B            { EqualsVarBool $1 $3 }
+       | var '=' var          { EqualsVarVar $1 $3 }
 
 T :  boolType { TBool }
   |  intType  { TInt }
@@ -106,8 +111,7 @@ data Match_ = EmptyMatch
 
 data Exp_ = SequenceExpr Exp_ Exp_
           | MathsExp Maths_
-          | LOL Match_ -- see comment
-          | LOL1 OutPattern_
+          | EqualsExp Equals_
           | VarInitExp VarInit_ -- see comment
            deriving Show
 
@@ -124,5 +128,11 @@ data OutPattern_ = EmptyOutPatter
                 | SingleOutPattern Maths_
                 deriving Show
 
+data Equals_ = EqualsInOut Match_ OutPattern_
+             | EqualsInMaths Match_ Maths_
+             | EqualsVarMaths String Maths_
+             | EqualsVarBool String Bool
+             | EqualsVarVar String String
+             deriving Show
 
 }
