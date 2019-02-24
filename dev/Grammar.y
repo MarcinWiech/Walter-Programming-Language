@@ -87,9 +87,9 @@ Match : '['']'                 { EmptyMatch }
 MatchRec : Var ']'           { SingleMatch $1 }
          | Var ',' MatchRec  { MultipleMatch $1 $3 }
 
-OutPattern : '['']'                        { EmptyOutPatter }
-           | '[' Maths ']'                 { SingleOutPattern $2 }
-           | '[' Maths ',' OutPatternRec   { MultipleOutPattern $2 $4 }
+OutPattern : '['']'                         { EmptyOutPatter }
+           | '[' Maths ']'                  { SingleOutPattern $2 }
+           | '[' Maths ',' OutPatternRec    { MultipleOutPattern $2 $4 }
 
 OutPatternRec : Maths ']'                   { SingleOutPattern $1 }
               | Maths ',' OutPatternRec     { MultipleOutPattern $1 $3 }
