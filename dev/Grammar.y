@@ -97,7 +97,11 @@ Comparables : var         { ComparablesVar $1 }
             | intValue    { ComparablesInt $1 }
             | B           { ComparablesBool $1 }
 
-ComparableExp : Comparables '==' Comparables   { EqualsTo_ $1 $3 }
+ComparableExp : ComparableExp '==' ComparableExp { EqualsToLR $1 $3 }
+              | ComparableExp '==' Comparables   { EqualsToL $1 $3 }
+              | Comparables '==' ComparableExp   { EqualsToR $1 $3 }
+              | Comparables '==' Comparables     { EqualsTo $1 $3 }
+              | '(' ComparableExp ')'            { $2 }
 
 Cond : if '(' ComparableExp ')' ':' Exp else ':' Exp { Cond_ $3 $6 $9 }
 
@@ -156,7 +160,10 @@ data Comparables_ = ComparablesVar String
                   | ComparablesBool Bool --Functions to be added!
                   deriving Show
 
-data ComparableExp_ = EqualsTo_ Comparables_ Comparables_ 
+data ComparableExp_ = EqualsTo Comparables_ Comparables_
+                    | EqualsToR Comparables_ ComparableExp_
+                    | EqualsToL ComparableExp_ Comparables_
+                    | EqualsToLR ComparableExp_ ComparableExp_
                     deriving Show
 
 data Cond_ = Cond_ ComparableExp_ Exp_ Exp_ deriving Show
