@@ -52,6 +52,7 @@ Exp : Cond                   { CondExp $1 }
     | '(' Exp ')'            { $2 }
     | VarInit                { VarInitExp $1 }
     | Exp ';' Exp            { SequenceExp $1 $3 } -- this will only appear on the left of a match statement -> refactor then
+    | FuncBodyInitArea       { LOL $1 }
 
 Maths : Maths '+' Maths      { MathsPlus $1 $3 }
       | Maths '-' Maths      { MathsMinus $1 $3 }
@@ -122,6 +123,13 @@ ComparableExp : ComparableExp '==' ComparableExp { EqualsToLR $1 $3 }
 
 Cond : if '(' ComparableExp ')' ':' Exp else ':' Exp { Cond_ $3 $6 $9 }
 
+FuncBodyInitArea : '{''}'                               { EmptyInitArea }
+                 | '{' VarInit '}'                      { SingleInitArea $2 }
+                 | '{' VarInit ',' FuncBodyInitAreaRec  { MultipleInitArea $2 $4 }
+
+FuncBodyInitAreaRec : VarInit '}'                       { SingleInitArea $1 }
+                    | VarInit ',' FuncBodyInitAreaRec   { MultipleInitArea $1 $3 }
+
 {
 parseError :: [Token] -> a
 parseError [] = error "Unknown Parse Error" 
@@ -147,6 +155,7 @@ data Exp_ = SequenceExp Exp_ Exp_
           | EqualsExp Equals_
           | VarInitExp VarInit_ -- see comment
           | CondExp Cond_
+          | LOL FuncBodyInitArea_
            deriving Show
 
 data Maths_ = MathsPlus Maths_ Maths_
@@ -158,9 +167,9 @@ data Maths_ = MathsPlus Maths_ Maths_
             deriving Show
 
 data OutPattern_ = EmptyOutPatter
-                | MultipleOutPattern Maths_ OutPattern_ 
-                | SingleOutPattern Maths_
-                deriving Show
+                 | MultipleOutPattern Maths_ OutPattern_ 
+                 | SingleOutPattern Maths_
+                 deriving Show
 
 data Equals_ = EqualsInOut Match_ OutPattern_
              | EqualsInMaths Match_ Maths_
@@ -197,5 +206,10 @@ data ComparableExp_ = EqualsTo Comparables_ Comparables_
                     deriving Show
 
 data Cond_ = Cond_ ComparableExp_ Exp_ Exp_ deriving Show
+
+data FuncBodyInitArea_ = EmptyInitArea
+                       | SingleInitArea VarInit_
+                       | MultipleInitArea VarInit_ FuncBodyInitArea_
+                       deriving Show
 
 }
