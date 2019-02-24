@@ -101,6 +101,17 @@ ComparableExp : ComparableExp '==' ComparableExp { EqualsToLR $1 $3 }
               | ComparableExp '==' Comparables   { EqualsToL $1 $3 }
               | Comparables '==' ComparableExp   { EqualsToR $1 $3 }
               | Comparables '==' Comparables     { EqualsTo $1 $3 }
+
+              | ComparableExp '<' ComparableExp  { SmallerThanLR $1 $3 }
+              | ComparableExp '<' Comparables    { SmallerThanL $1 $3 }
+              | Comparables '<' ComparableExp    { SmallerThanR $1 $3 }
+              | Comparables '<' Comparables      { SmallerThan $1 $3 }
+
+              | ComparableExp '>' ComparableExp  { GreaterThanLR $1 $3 }
+              | ComparableExp '>' Comparables    { GreaterThanL $1 $3 }
+              | Comparables '>' ComparableExp    { GreaterThanR $1 $3 }
+              | Comparables '>' Comparables      { GreaterThan $1 $3 }
+
               | '(' ComparableExp ')'            { $2 }
 
 Cond : if '(' ComparableExp ')' ':' Exp else ':' Exp { Cond_ $3 $6 $9 }
@@ -164,6 +175,16 @@ data ComparableExp_ = EqualsTo Comparables_ Comparables_
                     | EqualsToR Comparables_ ComparableExp_
                     | EqualsToL ComparableExp_ Comparables_
                     | EqualsToLR ComparableExp_ ComparableExp_
+
+                    | SmallerThan Comparables_ Comparables_
+                    | SmallerThanR Comparables_ ComparableExp_
+                    | SmallerThanL ComparableExp_ Comparables_
+                    | SmallerThanLR ComparableExp_ ComparableExp_
+
+                    | GreaterThan Comparables_ Comparables_
+                    | GreaterThanR Comparables_ ComparableExp_
+                    | GreaterThanL ComparableExp_ Comparables_
+                    | GreaterThanLR ComparableExp_ ComparableExp_
                     deriving Show
 
 data Cond_ = Cond_ ComparableExp_ Exp_ Exp_ deriving Show
