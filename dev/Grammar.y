@@ -41,8 +41,9 @@ import Tokens
     '<'        { TokenSmallerThan _ }
     '>'        { TokenGreaterThan _ }
 
+%right ';'
 %left '+' '-' '*' '/' '<' '>' '==' '!' '>>'
-%nonassoc if else eof intType boolType main trueValue falseValue ':' ':' '(' ')' '[' ']' ',' '{' '}'
+%nonassoc if else eof intType boolType main trueValue falseValue ':' '(' ')' '[' ']' ',' '{' '}'
 
 %% 
 Exp : Cond                   { CondExp $1 }
