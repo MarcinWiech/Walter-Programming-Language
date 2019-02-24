@@ -113,6 +113,8 @@ ComparableExp : ComparableExp '==' ComparableExp { EqualsToLR $1 $3 }
               | Comparables '>' Comparables      { GreaterThan $1 $3 }
 
               | '(' ComparableExp ')'            { $2 }
+              | var                              { ComparableExpVar $1 }
+              | B                                { ComparableExpBool $1 }
 
 Cond : if '(' ComparableExp ')' ':' Exp else ':' Exp { Cond_ $3 $6 $9 }
 
@@ -163,8 +165,6 @@ data Equals_ = EqualsInOut Match_ OutPattern_
              | EqualsVarVar String String -- add comparable for bool assignments
              deriving Show
 
--- new conds...
-
 data Comparables_ = ComparablesVar String
                   | ComparablesMaths Maths_
                   | ComparablesInt Int
@@ -185,6 +185,9 @@ data ComparableExp_ = EqualsTo Comparables_ Comparables_
                     | GreaterThanR Comparables_ ComparableExp_
                     | GreaterThanL ComparableExp_ Comparables_
                     | GreaterThanLR ComparableExp_ ComparableExp_
+
+                    | ComparableExpVar String
+                    | ComparableExpBool Bool
                     deriving Show
 
 data Cond_ = Cond_ ComparableExp_ Exp_ Exp_ deriving Show

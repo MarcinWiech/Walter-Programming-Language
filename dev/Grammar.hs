@@ -27,7 +27,7 @@ data HappyAbsSyn t4 t5 t6 t7 t8 t9 t10 t11 t12 t13 t14 t15 t16 t17
 	| HappyAbsSyn17 t17
 
 happyExpList :: Happy_Data_Array.Array Int Int
-happyExpList = Happy_Data_Array.listArray (0,259) ([0,4614,64,0,0,64,0,0,0,0,512,0,0,0,32,0,480,0,0,0,0,0,16,0,0,0,0,0,16,0,0,0,0,0,2064,0,0,4614,64,0,8196,8,0,8192,1,0,2048,0,0,0,0,0,8192,0,0,1024,32,0,480,0,0,518,1536,0,0,20,0,4614,0,0,6,1536,0,518,0,0,518,0,0,518,0,0,518,0,0,4614,64,0,518,1536,0,480,0,0,0,0,0,0,26624,0,1024,26624,0,0,0,0,0,0,0,518,1536,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,518,0,0,0,0,0,384,0,0,384,0,0,0,0,0,0,0,0,0,0,0,480,0,0,0,0,0,8710,0,0,0,0,0,0,0,0,0,0,0,480,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4,0,0,8192,1,0,0,0,0,8672,1,0,0,0,0,1504,0,0,1504,0,0,1024,26624,0,2048,0,0,518,1536,0,518,1536,0,518,1536,0,518,1536,0,518,1536,0,518,1536,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4614,64,0,0,0,0,0,0,0,518,0,0,0,0,0,4,0,0,0,0,0,8672,1,0,0,0,0,0,160,0,2048,0,0,0,0,0,518,0,0,0,0,0,4614,64,0,0,0,0
+happyExpList = Happy_Data_Array.listArray (0,268) ([0,4614,64,0,0,64,0,0,0,0,512,0,0,0,32,0,480,0,0,0,0,0,16,0,0,0,0,0,16,0,0,0,0,0,2064,0,0,4614,64,0,8196,8,0,8192,1,0,2048,0,0,0,0,0,8192,0,0,1024,32,0,480,0,0,518,1536,0,0,20,0,4614,0,0,6,1536,0,518,0,0,518,0,0,518,0,0,518,0,0,4614,64,0,518,1536,0,480,0,0,0,0,0,0,26624,0,1024,26624,0,0,0,0,0,0,0,518,1536,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,518,0,0,0,0,0,384,0,0,384,0,0,0,0,0,0,0,0,0,0,0,480,0,0,0,0,0,8710,0,0,0,0,0,0,0,0,0,0,0,480,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4,0,0,8192,1,0,0,0,0,8672,1,0,0,0,0,1504,0,0,1504,0,0,1024,26624,0,2048,0,0,518,1536,0,518,1536,0,518,1536,0,518,1536,0,518,1536,0,518,1536,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4614,64,0,0,0,0,0,0,0,518,0,0,0,0,0,4,0,0,0,0,0,8672,1,0,0,0,0,0,160,0,2048,0,0,0,0,0,518,0,0,0,0,0,4614,64,0,0,0,0
 	])
 
 {-# NOINLINE happyExpListPerState #-}
@@ -219,7 +219,11 @@ action_30 (24) = happyShift action_26
 action_30 (25) = happyShift action_27
 action_30 _ = happyReduce_39
 
-action_31 _ = happyReduce_41
+action_31 (27) = happyReduce_56
+action_31 (44) = happyReduce_56
+action_31 (46) = happyReduce_56
+action_31 (47) = happyReduce_56
+action_31 _ = happyReduce_56
 
 action_32 (44) = happyShift action_74
 action_32 (46) = happyShift action_75
@@ -238,10 +242,10 @@ action_34 (46) = happyReduce_40
 action_34 (47) = happyReduce_40
 action_34 _ = happyReduce_12
 
-action_35 (27) = happyReduce_38
-action_35 (44) = happyReduce_38
-action_35 (46) = happyReduce_38
-action_35 (47) = happyReduce_38
+action_35 (27) = happyReduce_55
+action_35 (44) = happyReduce_55
+action_35 (46) = happyReduce_55
+action_35 (47) = happyReduce_55
 action_35 _ = happyReduce_13
 
 action_36 (18) = happyShift action_34
@@ -578,7 +582,7 @@ action_103 (17) = happyGoto action_2
 action_103 _ = happyFail (happyExpListPerState 103)
 
 action_104 (38) = happyShift action_28
-action_104 _ = happyReduce_55
+action_104 _ = happyReduce_57
 
 happyReduce_1 = happySpecReduce_1  4 happyReduction_1
 happyReduction_1 (HappyAbsSyn17  happy_var_1)
@@ -1029,8 +1033,22 @@ happyReduction_54 _
 	)
 happyReduction_54 _ _ _  = notHappyAtAll 
 
-happyReduce_55 = happyReduce 9 17 happyReduction_55
-happyReduction_55 ((HappyAbsSyn4  happy_var_9) `HappyStk`
+happyReduce_55 = happySpecReduce_1  16 happyReduction_55
+happyReduction_55 (HappyTerminal (TokenVar _ happy_var_1))
+	 =  HappyAbsSyn16
+		 (ComparableExpVar happy_var_1
+	)
+happyReduction_55 _  = notHappyAtAll 
+
+happyReduce_56 = happySpecReduce_1  16 happyReduction_56
+happyReduction_56 (HappyAbsSyn8  happy_var_1)
+	 =  HappyAbsSyn16
+		 (ComparableExpBool happy_var_1
+	)
+happyReduction_56 _  = notHappyAtAll 
+
+happyReduce_57 = happyReduce 9 17 happyReduction_57
+happyReduction_57 ((HappyAbsSyn4  happy_var_9) `HappyStk`
 	_ `HappyStk`
 	_ `HappyStk`
 	(HappyAbsSyn4  happy_var_6) `HappyStk`
@@ -1161,8 +1179,6 @@ data Equals_ = EqualsInOut Match_ OutPattern_
              | EqualsVarVar String String -- add comparable for bool assignments
              deriving Show
 
--- new conds...
-
 data Comparables_ = ComparablesVar String
                   | ComparablesMaths Maths_
                   | ComparablesInt Int
@@ -1183,6 +1199,9 @@ data ComparableExp_ = EqualsTo Comparables_ Comparables_
                     | GreaterThanR Comparables_ ComparableExp_
                     | GreaterThanL ComparableExp_ Comparables_
                     | GreaterThanLR ComparableExp_ ComparableExp_
+
+                    | ComparableExpVar String
+                    | ComparableExpBool Bool
                     deriving Show
 
 data Cond_ = Cond_ ComparableExp_ Exp_ Exp_ deriving Show
