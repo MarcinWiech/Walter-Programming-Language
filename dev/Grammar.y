@@ -46,13 +46,12 @@ import Tokens
 %nonassoc if else eof intType boolType main trueValue falseValue ':' '(' ')' '[' ']' ',' '{' '}'
 
 %% 
+FuncDeclaration : funcName ':' FuncBodyInitArea Exp     { FuncDeclaration_ $1 $3 $4 }
+
 Exp : Cond                   { CondExp $1 }
     | Equals                 { EqualsExp $1 }
-    | Maths                  { MathsExp $1 }
     | '(' Exp ')'            { $2 }
-    | VarInit                { VarInitExp $1 }
     | Exp ';' Exp            { SequenceExp $1 $3 } -- this will only appear on the left of a match statement -> refactor then
-    | FuncBodyInitArea       { LOL $1 }
 
 Maths : Maths '+' Maths      { MathsPlus $1 $3 }
       | Maths '-' Maths      { MathsMinus $1 $3 }
@@ -155,7 +154,7 @@ data Exp_ = SequenceExp Exp_ Exp_
           | EqualsExp Equals_
           | VarInitExp VarInit_ -- see comment
           | CondExp Cond_
-          | LOL FuncBodyInitArea_
+          | LOL FuncDeclaration_
            deriving Show
 
 data Maths_ = MathsPlus Maths_ Maths_
@@ -211,5 +210,7 @@ data FuncBodyInitArea_ = EmptyInitArea
                        | SingleInitArea VarInit_
                        | MultipleInitArea VarInit_ FuncBodyInitArea_
                        deriving Show
+
+data FuncDeclaration_ = FuncDeclaration_ String FuncBodyInitArea_ Exp_ deriving Show
 
 }
