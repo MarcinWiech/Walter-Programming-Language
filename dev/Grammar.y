@@ -47,7 +47,7 @@ import Tokens
 
 %% 
 FuncDeclaration : funcName ':' FuncBodyInitArea Exp     { FuncDeclaration_ $1 $3 $4 }
-
+-- FuncDeclaration MUST START WITH A MATCH AFTER EVERY EXPRESSIO :((((((
 Exp : Cond                   { CondExp $1 }
     | Equals                 { EqualsExp $1 }
     | '(' Exp ')'            { $2 }

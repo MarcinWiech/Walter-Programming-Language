@@ -1,0 +1,78 @@
+Operators
+    Int > < => <= + - * / [%]
+    Bool || &&
+    Bool, Int, Typerefs, NULL == !=
+
+> Types:
+Init
+Char?
+Bool
+Customs
+    Type typename
+    Type typename : <>
+    Type typename : <T>
+
+
+> Variable Initialization
+options:
+    varname : Type
+    varname : Type = value
+    varname : Type<Type>
+    varname : Type << Std::in
+
+> Modules
+options:
+    Module : modulename
+    Module : Type
+    Module : Type<T>
+
+> Functions
+options:
+    Function functionName()
+    Function functionName() -> Type
+        -> Type
+    Fucntion functionName() -> Type | NULL
+        -> Type
+        -> NULL
+
+    Fucntion functionName(varname : Type, ...)
+    Fucntion functionName(varname : Type, ...) -> Type
+        -> Type
+    Fucntion functionName(varname : Type, ...) -> Type | NULL
+        -> Type
+        -> NULL
+
+
+> For loops:
+    For (varname : Int, Int, Int)
+
+> If statements:
+options:
+    If (Bool)
+        stmt
+
+    If (Bool)
+        stmt
+    Else
+        stmt
+
+    stmt can be if stmt
+
+> Main
+Main
+    statements
+    NO FUNCTION DECLARATIONS
+
+
+> Comments
+    //comment on one line
+
+> statements
+    - inits
+    - functionCalls -> functionName(args) or ModuleName::functionName(args)
+    - assignements
+    - reference copy
+    - operators
+    - custon type variable access (eg: myRow.fst)
+    - return statement
+    - Std::whatever (<< or >>)

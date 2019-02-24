@@ -1,0 +1,278 @@
+> Programs consists of STATIC MODULES which contain: static variables and static routines. 
+  Variables unique to an instance of a module are accessable by the use of a static routines of the module of that instance.
+  Private routines are possible in the form of inner routines only (shit though)
+  For Example:
+
+Module LinkedList_Node
+    //Instance's values -> define the type -> THESE ARE PRIVATE, ACCESSABILE ONLY BY THE MODULE'S ROUTINES
+    {
+        data : Int
+        next : LinkedList_Node
+    }
+
+    Routine get_data (node : LinkedList_Node) -> Int
+        case node == ?          //? = no reference: null
+            -> NULL_PTR         // -> means return
+        case any                // case any means otherwise in haskellß
+            -> node.data
+
+    Routine get_next (node : LinkedList_Node) -> LinkedList_Node | LinkedList_Node::NULL_PTR
+        case node == ?
+            -> NULL_PTR
+        case any
+            -> node.next
+
+    Routine set_next (node : LinkedList_Node, to_append : LinkedList_Node) -> NULL_PTR
+        case node == ? || to_append == ?
+            -> NULL_PTR
+        case any
+            -> node.next = to_appendß
+
+
+Module LinkedList: import LinkedList_Node
+
+    {
+        length : Int
+        head : LinkedList_Node
+        tail : LinkedList_Node
+    }
+
+    //static variables
+    NULL_LINKED_LIST : Exeption = NULL_LINKED_LIST
+
+    //static routines
+    Routine data_at (llist : LinkedList, index : Int) -> Int | LinkedList::NULL_LINKED_LIST
+
+        case llist == ?
+            -> NULL_LINKED_LIST
+
+        Routine _data_at (node : LinkedList_Node, index : Int) -> Int | LinkedList_Node::NULL_PTR
+            case node == ?
+                -> LinkedList_Node::NULL_PTR
+            case index > 0
+                -> _data_at (LinkedList_Node::get_next(node), index - 1)
+            case index == 0
+                -> LinkedList_Node::get_data(node)
+
+        tmp : auto = _data_at(llist.head, index)    //auto means: Int | LinkedList_Node::NULL_PTR, the same type of the routine _data_at
+        case tmp == LinkedList_Node::NULL_PTR
+            -> NULL_LINKED_LIST
+        case any
+            -> tmp
+
+    Routine get_size (llist : LinkedList) -> Int
+        -> llist.lenght
+
+Module MAIN_MODULE: import LinkedList
+    myList : LinkedList
+
+    //cannot do:
+    myList.head
+    myList.lenght
+
+    //i can do
+    LinkedList::data_at(myList, 0)
+    LinkedList::get_size(myList)
+
+    //stdio is a module for printing on screen
+    stdio::out << LinkedList::data_at(myList, 0) << stdio::space << stdio::endl
+
+
+--------------------------------------------------------------------------------------------------------------------------------------------------------
+
+//variable initialization
+x : Type
+x : Int = 9
+
+//list initialization
+list_name : [Type]
+list_name : [Int]
+list_name : [Int] = [1, 3, 4, 5]
+list_name : [Int] = [1 to 5]
+list_name : [Int] = [1 to 5 every 2] //1, 3, 5
+
+--------------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+IN A WORLD WITHOUT EXCEPTIONS THINGS ARE NICER? OR SHITTIER? UMM.. compiler needs to be strong
+
+Module LinkedList_Node
+    {
+        data : Int
+        next : LinkedList_Node
+    }
+
+    Routine get_data (node : LinkedList_Node) -> Int
+        -> node.data
+
+    Routine get_next (node : LinkedList_Node) -> LinkedList_Node
+        -> node.next
+
+    Routine set_next (node : LinkedList_Node, to_append : LinkedList_Node)
+            node.next = to_appendß
+
+
+Module LinkedList: import LinkedList_Node
+    {
+        length : Int
+        head : LinkedList_Node
+        tail : LinkedList_Node
+    }
+
+    Routine data_at (llist : LinkedList, index : Int) -> Int
+
+        Routine _data_at (node : LinkedList_Node, index : Int) -> Int
+            case index > 0
+                -> _data_at (LinkedList_Node::get_next(node), index - 1)
+            case index == 0
+                -> LinkedList_Node::get_data(node)
+
+        -> _data_at(llist.head, index)
+
+    Routine get_size (llist : LinkedList) -> Int
+        -> llist.lenght
+
+Module MAIN_MODULE: import LinkedList
+    myList : LinkedList
+
+    //cannot do:
+    myList.head
+    myList.lenght
+
+    //i can do
+    LinkedList::data_at(myList, 0)
+    LinkedList::get_size(myList)
+
+    //stdio is a module for printing on screen
+    stdio::out << LinkedList::data_at(myList, 0) << stdio::space << stdio::endl
+
+
+--------------------------------------------------------------------------------------------------------------------------------------------------------
+
+Agree: I am not gonna lie, I like the whole module::function(args) thign, it keeps things tidy. What I don't like is the fact that is not specific to the
+usecase of the coursework. So, here I will try to narrow the usecase. (also, the whole printing thing is pretty ugly, although tidy I reckon!).
+
+
+Type Node : <Template T>
+    data : T         //decide the type on initialization
+    next : Node
+
+Type LinkedList : <Template T>
+    head : Node<T>
+    tail : Node<T>
+    size : Int
+
+Module : LinkedList<T>
+
+    Routine data_at (llist : LinkedList<T>, index : Int) -> T | Exception
+        
+        Routine _data_at (node : Node<T>, index : Int) -> T | Exception
+            if index == 0 -> node.data
+            case node == ? -> Exception
+            case any -> _data_at (node.next, index - 1)
+
+        auto tmp = _data_at (llist.head, index)
+        -> tmp
+
+        //or simply
+     // -> _data_at (llist.head, index)
+
+
+Module MAIN_MODULE: import LinkedList
+    myList : LinkedList<Int> //here is how you init the template
+
+    //I can do
+    myList.head
+    myList.lenght
+    LinkedList::data_at(myList, 3)
+
+    //print
+    std::print < LinkedList::data_at(myList, 3) < std::space < std:endl
+
+Public class list
+{
+	public int size;
+
+	public static void append(Node new node, List list)
+		list += newNode
+		sie++
+}
+
+
+--------------------------------------------------------------------------------------------------------------------------------------------------------
+
+Templates are good if we are to generate streams of not only integers but maybe tuple of integers:
+
+Type Row 
+{
+    fst : Int
+    snd : Int
+    trd : Int
+}
+
+and then in main module:
+myList : [Row]
+
+which allows for:
+
+Routine processRows (list : [Row]) -> Int
+    case [] -> 0
+    case [r:rs] -> r.fst + r.snd + r.trd + processRows(rs) 
+
+so here [r:rs] is just like Haskell's list pattern matching, BUT!!! we don't need to match the type! in this case 'case' will need to include matches for all the parameters of the function
+
+If I need to check conditions or do operations on the type: (stupid example)
+
+Routine processRows (list : [Row]) -> Int
+    case [] -> 0
+    case [r:rs]
+        If r.fst == 0
+            -> r.snd + r.trd + processRows(rs)
+        case any
+            -> r.fst + r.snd + r.trd + processRows(rs) 
+        
+Mind you I can always use for loops:
+
+Routine processRows (list : [Row]) -> Int
+    sum : Int = 0
+    for r in list
+        sum += r.fst + r.snd + r.trd
+    -> sum
+
+
+should we perhaps change the keyword case to match (or something else) when it is meant to match the parameters?
+--------------------------------------------------------------------------------------------------------------------------------------------------------
+
+Type Node : <Template T>
+    data : T         //decide the type on initialization
+    next : Node
+
+Type LinkedList : <Template T>
+    head : Node<T>
+    tail : Node<T>
+    size : Int
+
+Module : LinkedList<T>
+
+    Routine _data_at (node : Node<T>, index : Int) -> T | NULL
+            case index == 0 -> node.data
+            case node == ? -> Exception
+            case any -> _data_at (node.next, index - 1)
+
+
+    Routine data_at (llist : LinkedList<T>, index : Int) -> T | NULL
+        AUTO tmp = _data_at (llist.head, index)
+	  AUTO(tmp):NULL
+		landcljandcljnadc
+	  AUTO(tmp):T
+		adckladlckmadlckm
+
+
+Module MAIN_MODULE: import LinkedList
+    myList : LinkedList<Int> //here is how you init the template
+
+    //I can do
+    myList.head
+    myList.size
+    LinkedList::data_at(myList, 3)
+
