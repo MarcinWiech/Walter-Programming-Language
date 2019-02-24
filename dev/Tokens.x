@@ -41,6 +41,8 @@ $white+       ;
   false         { tok (\p s -> TokenFalseValue p) }
   "=="          { tok (\p s -> TokenCompare p) }
   \!            { tok (\p s -> TokenNot p) }
+  \<            { tok (\p s -> TokenSmallerThan p) }
+  \>            { tok (\p s -> TokenGreaterThan p) }
 
   $alphaS [$alpha $digit \_ \’]*   { tok (\p s -> TokenVar p s) }
   $alphaC [$alpha $digit \_ \’]*   { tok (\p s -> TokenFuncName p s) }
@@ -80,7 +82,9 @@ data Token =
   TokenTrueValue AlexPosn       |
   TokenCompare AlexPosn         |
   TokenNot AlexPosn             |
-  TokenFalseValue AlexPosn
+  TokenFalseValue AlexPosn      |
+  TokenSmallerThan AlexPosn     |
+  TokenGreaterThan AlexPosn
   deriving (Eq,Show) 
 
 tokenPosn :: Token -> String
@@ -113,5 +117,7 @@ tokenPosn (TokenTrueValue (AlexPn a l c)) = show(l) ++ ":" ++ show(c)
 tokenPosn (TokenFalseValue (AlexPn a l c)) = show(l) ++ ":" ++ show(c)
 tokenPosn (TokenCompare (AlexPn a l c)) = show(l) ++ ":" ++ show(c)
 tokenPosn (TokenNot (AlexPn a l c)) = show(l) ++ ":" ++ show(c)
+tokenPosn (TokenSmallerThan (AlexPn a l c)) = show(l) ++ ":" ++ show(c)
+tokenPosn (TokenGreaterThan (AlexPn a l c)) = show(l) ++ ":" ++ show(c)
 
 }
