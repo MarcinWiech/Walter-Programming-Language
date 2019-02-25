@@ -8,25 +8,25 @@ import Tokens
 %error { parseError }
 %token 
     
-    intValue { TokenIntValue _ $$ } 
-    var { TokenVar _ $$ }
-    funcName { TokenFuncName _ $$ }
+    intValue   { TokenIntValue _ $$ } 
+    var        { TokenVar _ $$ }
+    funcName   { TokenFuncName _ $$ }
      
-    '=' { TokenEq _ } 
-    '+' { TokenPlus _ } 
-    '-' { TokenMinus _ } 
-    '*' { TokenTimes _ } 
-    '/' { TokenDiv _ } 
-    '(' { TokenLParen _ } 
-    ')' { TokenRParen _ }
+    '='        { TokenEq _ } 
+    '+'        { TokenPlus _ } 
+    '-'        { TokenMinus _ } 
+    '*'        { TokenTimes _ } 
+    '/'        { TokenDiv _ } 
+    '('        { TokenLParen _ } 
+    ')'        { TokenRParen _ }
 
-    ':' { TokenColon _ }
-    '[' { TokenLBracket _ }
-    ']' { TokenRBracket _ }
-    '{' { TokenLCurlyBracket _ }
-    '}' { TokenRCurlyBracket _ }
-    ',' { TokenComma _ }
-    '>>' { TokenPipe _ }
+    ':'        { TokenColon _ }
+    '['        { TokenLBracket _ }
+    ']'        { TokenRBracket _ }
+    '{'        { TokenLCurlyBracket _ }
+    '}'        { TokenRCurlyBracket _ }
+    ','        { TokenComma _ }
+    '>>'       { TokenPipe _ }
     intType    { TokenTypeInt _ }
     eof        { TokenEOF _ } -- in reality EOF
     boolType   { TokenTypeBool _ }
@@ -50,6 +50,7 @@ FuncDeclaration : funcName ':' FuncBodyInitArea Exp     { FuncDeclaration_ $1 $3
 -- FuncDeclaration MUST START WITH A MATCH AFTER EVERY EXPRESSIO :((((((
 Exp : Cond                   { CondExp $1 }
     | Equals                 { EqualsExp $1 }
+    | OutPattern             { OutPatternExp $1 }
     | '(' Exp ')'            { $2 }
     | Exp ';' Exp            { SequenceExp $1 $3 } -- this will only appear on the left of a match statement -> refactor then
 
@@ -151,8 +152,9 @@ data Match_ = EmptyMatch
 
 data Exp_ = CondExp Cond_
           | EqualsExp Equals_
+          | OutPatternExp OutPattern_
           | SequenceExp Exp_ Exp_
-           deriving Show
+          deriving Show
 
 data Maths_ = MathsPlus Maths_ Maths_
             | MathsMinus Maths_ Maths_
