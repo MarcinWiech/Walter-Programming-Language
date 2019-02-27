@@ -144,7 +144,7 @@ data VarInit_ = VarIntInit_ Var_ Int
 
 data Match_ = EmptyMatch
             | EOFMatch
-            | MultipleMatch Var_ Match_ 
+            | MultipleMatch Var_ Match_
             | SingleMatch Var_
             deriving Show
 
