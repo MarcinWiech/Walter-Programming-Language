@@ -59,6 +59,7 @@ Exp : Cond                   { CondExp $1 }
     | OutPattern             { OutPatternExp $1 }
     | '(' Exp ')'            { $2 }
     | Exp ';' Exp            { SequenceExp $1 $3 } -- this will only appear on the left of a match statement -> refactor then
+    | Exp ';'                { $1 }
 
 Maths : Maths '+' Maths      { MathsPlus $1 $3 }
       | Maths '-' Maths      { MathsMinus $1 $3 }
@@ -115,10 +116,10 @@ ComparableExp : ComparableExp '==' ComparableExp { EqualsTo $1 $3 }
 Cond : if '(' ComparableExp ')' ':' Exp else ':' Exp { Cond_ $3 $6 $9 }
 
 FuncBodyInitArea : '{''}'                               { EmptyInitArea }
-                 | '{' VarInit '}'                      { SingleInitArea $2 }
+                 | '{' VarInit ';' '}'                      { SingleInitArea $2 }
                  | '{' VarInit ';' FuncBodyInitAreaRec  { MultipleInitArea $2 $4 }
 
-FuncBodyInitAreaRec : VarInit '}'                       { SingleInitArea $1 }
+FuncBodyInitAreaRec : VarInit ';' '}'                       { SingleInitArea $1 }
                     | VarInit ';' FuncBodyInitAreaRec   { MultipleInitArea $1 $3 }
 
 Main : main ':' stdin '>>' funcName '>>' MainRec   { MultipleSegue $5 $7 }
