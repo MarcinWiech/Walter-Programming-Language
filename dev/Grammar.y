@@ -86,7 +86,6 @@ Var : var ':' T { Var_ $1 $3 }
 
 VarInit : Var '=' intValue { VarIntInit_ $1 $3}
         | Var '=' B        { VarBoolInit_ $1 $3}
-        | Var '=' var      { VarStrInit_ $1 $3}
 
 Match : '['']'                 { EmptyMatch }
       | '[' eof ']'            { EOFMatch }
@@ -133,12 +132,13 @@ parseError :: [Token] -> a
 parseError [] = error "Unknown Parse Error" 
 parseError (t:ts) = error ("Parse error at line:column " ++ (tokenPosn t))
 
+data SuperExp = Func
+
 data T_ = TInt | TBool | TFunc T_ T_ deriving Show
 
 data Var_ = Var_ String T_ deriving Show
 
-data VarInit_ = VarIntInit_ Var_ Int 
-              | VarStrInit_ Var_ String 
+data VarInit_ = VarIntInit_ Var_ Int
               | VarBoolInit_ Var_ Bool 
               deriving Show
 

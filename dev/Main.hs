@@ -17,3 +17,28 @@ noParse :: ErrorCall -> IO ()
 noParse e = do let err =  show e
                hPutStr stderr err
                return ()
+
+
+
+data M = MInt String Int | MBool String Bool deriving (Show, Eq)
+type E = [M]
+
+envInit :: FuncDeclaration_ -> E
+envInit (NormalFuncDeclaration _ vars _) = envInitInner vars
+                                         where envInitInner :: FuncBodyInitArea_ -> E
+                                               envInitInner EmptyInitArea = []
+                                               envInitInner (SingleInitArea (VarIntInit_ (Var_ name _) value)) = [(MInt name value)]
+                                               envInitInner (SingleInitArea (VarBoolInit_ (Var_ name _) value)) = [(MBool name value)]
+                                               envInitInner (MultipleInitArea (VarIntInit_ (Var_ name _) value) next) = (MInt name value) : envInitInner next
+                                               envInitInner (MultipleInitArea (VarBoolInit_ (Var_ name _) value) next) = (MBool name value) : envInitInner next
+
+eval1_findMain :: [FuncDeclaration_] -> FuncDeclaration_
+eval1_findMain (MainFuncDeclaration (SingleSegue funcname):ss) = evalFunction (envInit func) func
+                                             where func = findFunctionByName funcname ss
+
+findFunctionByName :: String -> [FuncDeclaration_] -> FuncDeclaration_
+findFunctionByName funcName ((NormalFuncDeclaration funcName' a b):ff) | funcName == funcName' = (NormalFuncDeclaration funcName' a b)
+                                                                       | otherwise = findFunctionByName funcName ff
+
+evalFunction :: FuncDeclaration_ -> E -> FuncDeclaration_
+evalFunction x y= x
