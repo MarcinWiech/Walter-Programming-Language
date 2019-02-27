@@ -99,26 +99,26 @@ OutPatternRec : Maths ']'                   { SingleOutPattern $1 }
 Comparables : Maths       { ComparablesMaths $1 }
             | B           { ComparablesBool $1 }
 
-ComparableExp : ComparableExp '==' ComparableExp { EqualsToLR $1 $3 }
+ComparableExp : ComparableExp '==' ComparableExp { EqualsTo $1 $3 }
 
-              | ComparableExp '<' ComparableExp  { SmallerThanLR $1 $3 }
+              | ComparableExp '<' ComparableExp  { SmallerThan $1 $3 }
 
-              | ComparableExp '>' ComparableExp  { GreaterThanLR $1 $3 }
+              | ComparableExp '>' ComparableExp  { GreaterThan $1 $3 }
 
               | '!' ComparableExp                { Not $2 }
 
               | '(' ComparableExp ')'            { $2 }
-              | Comparables                        { ComparableExpSingle $1 }
+              | Comparables                      { ComparableExpSingle $1 }
                          
 
 Cond : if '(' ComparableExp ')' ':' Exp else ':' Exp { Cond_ $3 $6 $9 }
 
 FuncBodyInitArea : '{''}'                               { EmptyInitArea }
                  | '{' VarInit '}'                      { SingleInitArea $2 }
-                 | '{' VarInit ',' FuncBodyInitAreaRec  { MultipleInitArea $2 $4 }
+                 | '{' VarInit ';' FuncBodyInitAreaRec  { MultipleInitArea $2 $4 }
 
 FuncBodyInitAreaRec : VarInit '}'                       { SingleInitArea $1 }
-                    | VarInit ',' FuncBodyInitAreaRec   { MultipleInitArea $1 $3 }
+                    | VarInit ';' FuncBodyInitAreaRec   { MultipleInitArea $1 $3 }
 
 {
 parseError :: [Token] -> a
@@ -173,11 +173,11 @@ data Comparables_ = ComparablesVar String
                   | ComparablesBool Bool --Functions to be added!
                   deriving Show
 
-data ComparableExp_ = EqualsTo Comparables_ Comparables_
+data ComparableExp_ = EqualsTo ComparableExp_ ComparableExp_
 
-                    | SmallerThan Comparables_ Comparables_
+                    | SmallerThan ComparableExp_ ComparableExp_
 
-                    | GreaterThan Comparables_ Comparables_
+                    | GreaterThan ComparableExp_ ComparableExp_
 
                     | Not ComparableExp_
 
