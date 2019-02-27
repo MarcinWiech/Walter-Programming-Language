@@ -45,7 +45,10 @@ import Tokens
 %left '+' '-' '*' '/' '<' '>' '==' '!' '>>'
 %nonassoc if else eof intType boolType main trueValue falseValue ':' '(' ')' '[' ']' ',' '{' '}'
 
-%% 
+%%
+prods : FuncDeclaration                   { [$1] }
+      | prods FuncDeclaration             { $2 : $1 }
+
 FuncDeclaration : funcName ':' FuncBodyInitArea Exp     { FuncDeclaration_ $1 $3 $4 }
 -- FuncDeclaration MUST START WITH A MATCH AFTER EVERY EXPRESSIO :((((((
 Exp : Cond                   { CondExp $1 }
