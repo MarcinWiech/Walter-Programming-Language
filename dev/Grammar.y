@@ -40,17 +40,20 @@ import Tokens
     '!'        { TokenNot _ }
     '<'        { TokenSmallerThan _ }
     '>'        { TokenGreaterThan _ }
+    stdin      { TokenStdin _ }
+    stdout     { TokenStdout _ }
 
 %right ';'
 %left '+' '-' '*' '/' '<' '>' '==' '!' '>>'
-%nonassoc if else eof intType boolType main trueValue falseValue ':' '(' ')' '[' ']' ',' '{' '}'
+%nonassoc if else eof intType boolType main trueValue falseValue stdin stdout ':' '(' ')' '[' ']' ',' '{' '}'
 
 %%
 prods : FuncDeclaration                   { [$1] }
       | prods FuncDeclaration             { $2 : $1 }
 
-FuncDeclaration : funcName ':' FuncBodyInitArea Exp     { FuncDeclaration_ $1 $3 $4 }
--- FuncDeclaration MUST START WITH A MATCH AFTER EVERY EXPRESSIO :((((((
+FuncDeclaration : funcName ':' FuncBodyInitArea Exp     { NormalFuncDeclaration $1 $3 $4 }
+                | Main                                  { MainFuncDeclaration $1 }
+
 Exp : Cond                   { CondExp $1 }
     | Equals                 { EqualsExp $1 }
     | OutPattern             { OutPatternExp $1 }
@@ -103,17 +106,12 @@ Comparables : Maths       { ComparablesMaths $1 }
             | B           { ComparablesBool $1 }
 
 ComparableExp : ComparableExp '==' ComparableExp { EqualsTo $1 $3 }
-
               | ComparableExp '<' ComparableExp  { SmallerThan $1 $3 }
-
               | ComparableExp '>' ComparableExp  { GreaterThan $1 $3 }
-
               | '!' ComparableExp                { Not $2 }
-
               | '(' ComparableExp ')'            { $2 }
               | Comparables                      { ComparableExpSingle $1 }
                          
-
 Cond : if '(' ComparableExp ')' ':' Exp else ':' Exp { Cond_ $3 $6 $9 }
 
 FuncBodyInitArea : '{''}'                               { EmptyInitArea }
@@ -122,6 +120,12 @@ FuncBodyInitArea : '{''}'                               { EmptyInitArea }
 
 FuncBodyInitAreaRec : VarInit '}'                       { SingleInitArea $1 }
                     | VarInit ';' FuncBodyInitAreaRec   { MultipleInitArea $1 $3 }
+
+Main : main ':' stdin '>>' funcName '>>' MainRec   { MultipleSegue $5 $7 }
+     | main ':' stdin '>>' funcName '>>' stdout    { SingleSegue $5 }
+      
+MainRec : funcName '>>' stdout   { SingleSegue $1 }
+        | funcName '>>' MainRec  { MultipleSegue $1 $3 }
 
 {
 parseError :: [Token] -> a
@@ -177,13 +181,9 @@ data Comparables_ = ComparablesVar String
                   deriving Show
 
 data ComparableExp_ = EqualsTo ComparableExp_ ComparableExp_
-
                     | SmallerThan ComparableExp_ ComparableExp_
-
                     | GreaterThan ComparableExp_ ComparableExp_
-
                     | Not ComparableExp_
-
                     | ComparableExpSingle Comparables_
                     deriving Show
 
@@ -194,6 +194,11 @@ data FuncBodyInitArea_ = EmptyInitArea
                        | MultipleInitArea VarInit_ FuncBodyInitArea_
                        deriving Show
 
-data FuncDeclaration_ = FuncDeclaration_ String FuncBodyInitArea_ Exp_ deriving Show
+data FuncDeclaration_ = NormalFuncDeclaration String FuncBodyInitArea_ Exp_ 
+                      | MainFuncDeclaration Main_ 
+                      deriving Show
 
+data Main_ = MultipleSegue String Main_ 
+           | SingleSegue String
+           deriving Show
 }

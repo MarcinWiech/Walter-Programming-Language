@@ -44,12 +44,14 @@ Smaller:
             [result]
 
 Func:
+{}
 [a : Int, b : Int] = if ([a, b] >> Computation):
                         [a + 3b]
                         x : Int = ([a, b] >> Computation2)
                         [a, b]
                     else:
                         [a + b]
+
 
 Main:
     stdin >> Problem5 >> Fun >> stdout
