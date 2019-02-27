@@ -21,8 +21,7 @@ noParse e = do let err =  show e
 
 parseThis s = eval1_findMain $ parseCalc $ alexScanTokens s
 parseThisFile = do sourceText <- readFile "SampleCode.txt"
-                   let x = parseThis sourceText
-                   putStrLn $ show x
+                   parseThis sourceText
                    return ()
 
 data M = MInt String Int | MBool String Bool deriving (Show, Eq)
@@ -53,7 +52,7 @@ envUpdateOrAppend [] (MInt name' value') = [(MInt name' value')]
 envUpdateOrAppend ((MInt name value):xs) (MInt name' value') | name == name' = (MInt name value') : xs
                                                              | otherwise = (MInt name value) : (envUpdateOrAppend xs (MInt name' value'))
 
-eval1_findMain :: [FuncDeclaration_] -> String -- FuncDeclaration_
+eval1_findMain :: [FuncDeclaration_] -> IO () -- FuncDeclaration_
 eval1_findMain (MainFuncDeclaration (SingleSegue funcname):ss) = evalFunction (envInit initArea) exp
                                                                  where (NormalFuncDeclaration fname initArea exp) = findFunctionByName funcname ss
 eval1_findMain ((MainFuncDeclaration (MultipleSegue funcname next)):ss) = evalFunction (envInit initArea) exp -- TODO!
@@ -63,7 +62,7 @@ findFunctionByName :: String -> [FuncDeclaration_] -> FuncDeclaration_
 findFunctionByName funcName ((NormalFuncDeclaration funcName' a b):ff) | funcName == funcName' = (NormalFuncDeclaration funcName' a b)
                                                                        | otherwise = findFunctionByName funcName ff
 
-evalFunction :: E -> Exp_ -> String
+evalFunction :: E -> Exp_ -> IO ()
 evalFunction env (EqualsExp (EqualsInOut match out)) = evalFunction newEnv (OutPatternExp out)
                                                        where newEnv = matchUpdateEnv env (matchVarsToVarnameList match) matchIntFromStdio
 evalFunction env (OutPatternExp p) = outPatternPrint env p
@@ -82,12 +81,13 @@ matchVarsToVarnameList (MultipleMatch (Var_ name _) next) = name : matchVarsToVa
 matchIntFromStdio :: [Int]
 matchIntFromStdio = unsafePerformIO matchIntFromStdio_inner
                     where matchIntFromStdio_inner = do line <- getLine
+                                                       hFlush stdout
                                                        return $ (map read $ words line :: [Int])
 
-outPatternPrint :: E -> OutPattern_ -> String
-outPatternPrint env EmptyOutPatter = ""
-outPatternPrint env (SingleOutPattern (MathsInt i)) = show i
-outPatternPrint env (SingleOutPattern (MathsVar name)) = printMvalue $ envGetVar env name
+outPatternPrint :: E -> OutPattern_ -> IO ()
+outPatternPrint env EmptyOutPatter = putStrLn ""
+outPatternPrint env (SingleOutPattern (MathsInt i)) = putStrLn $ show i
+outPatternPrint env (SingleOutPattern (MathsVar name)) = putStrLn $ printMvalue $ envGetVar env name
                                                         where printMvalue :: M -> String
                                                               printMvalue (MInt _ v) = show v
                                                               printMvalue (MBool _ v) = show v

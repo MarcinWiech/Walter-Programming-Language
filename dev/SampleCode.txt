@@ -45,5 +45,9 @@ Smaller:
 
                         [result];
 
+Marameo:
+{}
+[a : Int, b : Int] = [a];
+
 Main:
-    stdin >> Problem5 >> Fun >> stdout
+    stdin >> Marameo >> Fun >> stdout
