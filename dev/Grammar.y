@@ -72,6 +72,7 @@ Maths : Maths '+' Maths      { MathsPlus $1 $3 }
 Equals : Match '=' OutPattern { EqualsInOut $1 $3 }
        | Match '=' Maths      { EqualsInMaths $1 $3 }
        | Match '=' Equals     { EqualsInEquals $1 $3}
+       | Match '=' Cond       { EqualsInCond $1 $3 }
        | var '=' Maths        { EqualsVarMaths $1 $3 }
        | var '=' B            { EqualsVarBool $1 $3 }
 
@@ -99,7 +100,6 @@ OutPattern : '['']'                         { EmptyOutPatter }
            | '[' Maths ',' OutPatternRec    { MultipleOutPattern $2 $4 }
            | '[' Maths ']'                  { SingleOutPattern $2 }
            
-
 OutPatternRec : Maths ']'                   { SingleOutPattern $1 }
               | Maths ',' OutPatternRec     { MultipleOutPattern $1 $3 }
 
@@ -170,6 +170,7 @@ data OutPattern_ = EmptyOutPatter
 data Equals_ = EqualsInOut Match_ OutPattern_
              | EqualsInMaths Match_ Maths_
              | EqualsInEquals Match_ Equals_
+             | EqualsInCond Match_ Cond_
              | EqualsVarMaths String Maths_
              | EqualsVarBool String Bool
              | EqualsVarVar String String -- add comparable for bool assignments

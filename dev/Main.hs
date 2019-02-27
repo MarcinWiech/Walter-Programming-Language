@@ -8,8 +8,7 @@ import System.IO
 main :: IO ()
 main = catch main' noParse
 
-main' = do (fileName : _ ) <- getArgs 
-           sourceText <- readFile fileName
+main' = do sourceText <- readFile "SampleCode.txt"
            putStrLn ("Parsing : " ++ sourceText)
            let parsedProg = parseCalc (alexScanTokens sourceText)
            putStrLn ("Parsed as " ++ (show parsedProg))
