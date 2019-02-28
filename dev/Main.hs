@@ -115,9 +115,11 @@ outPatternPrint env (SingleOutPattern (MathsVar name)) = do putStr $! printMvalu
                                                             putStrLn ""
 
 outPatternPrint env (MultipleOutPattern (MathsInt i) (SingleOutPattern next)) = do putStr $! show i
+                                                                                   putStr " "
                                                                                    outPatternPrint env (SingleOutPattern next)
 
 outPatternPrint env (MultipleOutPattern (MathsVar name) (SingleOutPattern next)) = do putStr $! printMvalue $! envGetVar env name
+                                                                                      putStr " "
                                                                                       outPatternPrint env (SingleOutPattern next)
 
 outPatternPrint env (MultipleOutPattern (MathsInt i) next) = do putStr $! show i
