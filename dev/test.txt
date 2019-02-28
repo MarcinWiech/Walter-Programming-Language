@@ -2,7 +2,7 @@ Problem2:
 {
     var1 : Int = 999;
 }
-[a : Int] = [a, a];
+[a : Int] = [a, a, 30, var1, a];
 
 Main:
     stdin >> Problem2 >> stdout

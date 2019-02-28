@@ -1,1 +1,1 @@
-Problem2: {} [a : Int] = [a]; Main: stdin >> Problem2 >> stdout
+Problem2: {} [a : Int] = [a, a, 30, var1, a]; Main: stdin >> Problem2 >> stdout

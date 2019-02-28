@@ -65,7 +65,7 @@ findFunctionByName funcName ((NormalFuncDeclaration funcName' a b):ff) | funcNam
 evalFunction :: E -> Exp_ -> IO ()
 evalFunction env (OutPatternExp p) = outPatternPrint env p
 
-evalFunction env (SequenceExp (e) (OutPatternExp p)) = evalFunction env (OutPatternExp p)
+--evalFunction env (SequenceExp a b) = -- need maths to return the new env for eval of b
 
 evalFunction env (EqualsExp (EqualsInOut match out)) = inner
                         where inner = do end <- isEOF
