@@ -6,14 +6,22 @@ import System.IO
 import System.IO.Unsafe (unsafePerformIO)
 import System.IO (isEOF)
 
-main' = do sourceText <- readFile "SampleCode.txt"
-           putStrLn ("Parsing : " ++ sourceText)
-           let parsedProg = parseCalc (alexScanTokens sourceText)
-           putStrLn ("Parsed as " ++ (show parsedProg))
+-- main' = do sourceText <- readFile "SampleCode.txt"
+--            putStrLn ("Parsing : " ++ sourceText)
+--            let parsedProg = parseCalc (alexScanTokens sourceText)
+--            putStrLn ("Parsed as " ++ (show parsedProg))
+
+main :: IO ()
+main = putStrLn $ show $ unsafePerformIO $ parseThisFile     
 
 parseThis s = eval1_findMain $ parseCalc $ alexScanTokens s
-parseThisFile = do sourceText <- readFile "SampleCode.txt"
+parseThisFile = do sourceText <- readFile "test.txt"
+                   putStrLn sourceText
+                   putStrLn "\n"
+                   putStrLn $ show $ parseCalc $ alexScanTokens sourceText
                    return $ parseThis sourceText
+
+
 
 data M = MInt String Int | MBool String Bool deriving (Show, Eq)
 type E = [M]
@@ -44,6 +52,10 @@ envUpdateOrAppend ((MInt name value):xs) (MInt name' value') | name == name' = (
                                                              | otherwise = (MInt name value) : (envUpdateOrAppend xs (MInt name' value'))
 
 eval1_findMain :: [FuncDeclaration_] -> E -- FuncDeclaration_
+-- eval1_findMain ((MainFuncDeclaration (SingleSegue funcname)):ss) = errorWithoutStackTrace "asdad"
+                                                                    --   let (NormalFuncDeclaration fname initArea exp) = findFunctionByName funcname ss
+                                                                    --   unsafePerformIO $ return $ evalFunction (envInit initArea) exp
+                                                                 
 eval1_findMain (MainFuncDeclaration (SingleSegue funcname):ss) = evalFunction (envInit initArea) exp
                                                                  where (NormalFuncDeclaration fname initArea exp) = findFunctionByName funcname ss
 eval1_findMain ((MainFuncDeclaration (MultipleSegue funcname next)):ss) = evalFunction (envInit initArea) exp -- TODO!
@@ -54,7 +66,7 @@ findFunctionByName funcName ((NormalFuncDeclaration funcName' a b):ff) | funcNam
                                                                        | otherwise = findFunctionByName funcName ff
 
 evalFunction :: E -> Exp_ -> E
-evalFunction env (EqualsExp (EqualsInOut match out))   | newEnv == [] = evalFunction newEnv (OutPatternExp out)
+evalFunction env (EqualsExp (EqualsInOut match out))   | newEnv == [] = env
                                                        | otherwise = evalFunction newEnv (SequenceExp (OutPatternExp out) (EqualsExp (EqualsInOut match out)))
                                                        where newEnv = matchUpdateEnv env (matchVarsToVarnameList match) matchIntFromStdio
 evalFunction env (OutPatternExp p) = unsafePerformIO $ outPatternPrint env p
@@ -62,6 +74,8 @@ evalFunction env (SequenceExp a b) = evalFunction (evalFunction env a) b
                                         
 matchUpdateEnv :: E -> [String] -> Maybe [Int] -> E
 matchUpdateEnv env [] Nothing = []
+matchUpdateEnv env nn Nothing = []
+matchUpdateEnv env nn (Just []) = env
 matchUpdateEnv env (n:nn) (Just (i:ii)) = matchUpdateEnv (envUpdateOrAppend env (MInt n i)) nn (Just ii)
 matchUpdateEnv env _ _ = env -- error state
 
@@ -72,13 +86,13 @@ matchVarsToVarnameList (SingleMatch (Var_ name _)) = [name]
 matchVarsToVarnameList (MultipleMatch (Var_ name _) next) = name : matchVarsToVarnameList next
 
 matchIntFromStdio :: Maybe [Int]
-matchIntFromStdio = unsafePerformIO input
+matchIntFromStdio = unsafePerformIO matchIntFromStdio_inner
                     where matchIntFromStdio_inner =  do done <- isEOF
                                                         if done
                                                             then return Nothing
                                                             else do line <- getLine
-                                                                    return $ Just $ (map read $ words line :: [Int])
-                          input = matchIntFromStdio_inner
+                                                                    line1 <- getLine
+                                                                    return $ Just $ (map read $ words line1 :: [Int])
 
 evalMaths :: E -> Maths_ -> Maths_
 evalMaths env (MathsInt int) = (MathsInt int)
@@ -99,9 +113,10 @@ outPatternPrint env EmptyOutPatter = do putStrLn ""
                                         return env
 outPatternPrint env (SingleOutPattern (MathsInt i)) = do putStrLn $ show i
                                                          return env
-outPatternPrint env (SingleOutPattern (MathsVar name)) = do putStrLn $ printMvalue $ envGetVar env name
-                                                            return env  
+outPatternPrint env (SingleOutPattern (MathsVar name)) =  do putStrLn $ printMvalue $ envGetVar env name
+                                                             return env  
 
 printMvalue :: M -> String
 printMvalue (MInt _ v) = show v
 printMvalue (MBool _ v) = show v
+
