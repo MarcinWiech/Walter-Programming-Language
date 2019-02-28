@@ -65,8 +65,6 @@ findFunctionByName funcName ((NormalFuncDeclaration funcName' a b):ff) | funcNam
 evalFunction :: E -> Exp_ -> IO ()
 evalFunction env (OutPatternExp p) = outPatternPrint env p
 
---evalFunction env (SequenceExp a b) = -- need maths to return the new env for eval of b
-
 evalFunction env (EqualsExp (EqualsInOut match out)) = inner
                         where inner = do end <- isEOF
                                          if end then do putStr ""
@@ -75,6 +73,23 @@ evalFunction env (EqualsExp (EqualsInOut match out)) = inner
                                                  let newEnv = matchUpdateEnv env vars nums
                                                  evalFunction newEnv (OutPatternExp out)
                                                  evalFunction newEnv (EqualsExp (EqualsInOut match out))
+
+evalEquals :: E -> Equals_ -> E
+-- EqualsVarMaths :: vaname = mathsOperation
+evalEquals env (EqualsVarMaths varName (MathsInt v)) = envUpdateOrAppend env (MInt varName v)
+evalEquals env (EqualsVarMaths varName (MathsVar v)) = envUpdateOrAppend env (MInt varName (extraxt $ envGetVar env varName))
+                                                       where extraxt (MInt _ i) = i
+evalEquals env (EqualsVarMaths varName m) = evalEquals env (EqualsVarMaths varName (evalMaths env m))
+
+-- EqualsVarBool
+evalEquals env (EqualsVarBool varName b) = envUpdateOrAppend env (MBool varName b)
+
+-- EqualsVarVar
+evalEquals env (EqualsVarVar varName1 varName2) = envUpdateOrAppend env (assign varName1 (envGetVar env varName2))
+                                                    where assign s (MInt _ i) = (MInt s i)
+                                                          assign s (MBool _ b) = (MBool s b)
+                                                          
+
 
 matchUpdateEnv :: E -> [String] -> [Int] -> E
 matchUpdateEnv env [] _ = env
@@ -96,15 +111,15 @@ evalMaths :: E -> Maths_ -> Maths_
 evalMaths env (MathsInt int) = (MathsInt int)
 evalMaths env (MathsVar name) = convert (envGetVar env name)
                          where convert (MInt _ v) = MathsInt v
-evalMaths env (MathsPlus (MathsInt x) (MathsInt y)) = MathsInt (x+y)  
-evalMaths env (MathsMinus (MathsInt x) (MathsInt y)) = MathsInt (x-y) 
-evalMaths env (MathsTimes (MathsInt x) (MathsInt y)) = MathsInt (x*y)  
+evalMaths env (MathsPlus (MathsInt x) (MathsInt y)) = MathsInt (x+y) 
+evalMaths env (MathsMinus (MathsInt x) (MathsInt y)) = MathsInt (x-y)
+evalMaths env (MathsTimes (MathsInt x) (MathsInt y)) = MathsInt (x*y)
 evalMaths env (MathsDevide (MathsInt x) (MathsInt y)) = MathsInt (x `div` y)
 
 evalMaths env (MathsPlus x y) = evalMaths env (MathsPlus (evalMaths env x) (evalMaths env y))  
 evalMaths env (MathsMinus x y) = evalMaths env (MathsMinus (evalMaths env x) (evalMaths env y)) 
 evalMaths env (MathsTimes x y) = evalMaths env (MathsTimes (evalMaths env x) (evalMaths env y))  
-evalMaths env (MathsDevide x y) = evalMaths env (MathsDevide (evalMaths env x) (evalMaths env y))    
+evalMaths env (MathsDevide x y) = evalMaths env (MathsDevide (evalMaths env x) (evalMaths env y))
 
 outPatternPrint :: E -> OutPattern_ -> IO ()
 outPatternPrint env EmptyOutPatter = putStr $! ""
@@ -134,4 +149,6 @@ outPatternPrint env (MultipleOutPattern (MathsVar name) next) = do putStr $! pri
 printMvalue :: M -> String
 printMvalue (MInt _ v) = show v
 printMvalue (MBool _ v) = show v
+
+
 
