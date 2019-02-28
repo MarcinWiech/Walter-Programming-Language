@@ -12,16 +12,16 @@ import System.IO (isEOF)
 --            putStrLn ("Parsed as " ++ (show parsedProg))
 
 main :: IO ()
-main = putStrLn $ show $ unsafePerformIO $ parseThisFile     
+main = putStrLn $ show $ parseThisFile     
 
+parseThisFile :: E
+parseThisFile = parseThis getProgram
 parseThis s = eval1_findMain $ parseCalc $ alexScanTokens s
-parseThisFile = do sourceText <- readFile "test.txt"
-                   --putStrLn sourceText
-                   --putStrLn "\n"
-                   --putStrLn $ show $ parseCalc $ alexScanTokens sourceText
-                   return $ parseThis sourceText
 
-
+getProgram :: String
+getProgram = unsafePerformIO $ inner
+            where inner = do s <- readFile "test.txt"
+                             return s
 
 data M = MInt String Int | MBool String Bool deriving (Show, Eq)
 type E = [M]
@@ -62,16 +62,28 @@ findFunctionByName funcName ((NormalFuncDeclaration funcName' a b):ff) | funcNam
                                                                        | otherwise = findFunctionByName funcName ff
 
 evalFunction :: E -> Exp_ -> E
-evalFunction env (EqualsExp (EqualsInOut match out)) | isEndOfFile = env
-                                                     | otherwise = evalFunction newEnv (SequenceExp (OutPatternExp out) (EqualsExp (EqualsInOut match out)))
-                                                     where newEnv = matchUpdateEnv env (matchVarsToVarnameList match) matchIntFromStdio
+-- evalFunction env (EqualsExp (EqualsInOut match out)) | isEndOfFile = env
+--                                                      | otherwise = evalFunction newEnv (SequenceExp (OutPatternExp out) (EqualsExp (EqualsInOut match out)))
+--                                                      where newEnv = matchUpdateEnv env (matchVarsToVarnameList match) matchIntFromStdio
 evalFunction env (OutPatternExp p) = unsafePerformIO $! outPatternPrint env p
--- evalFunction env (SequenceExp a b) = evalFunction (evalFunction env a) b -- here is the problem! I think lazy eval is the problem
-evalFunction env (SequenceExp a b) = unsafePerformIO $! evalFunction_innerSeq
-                                    where evalFunction_innerSeq = do putStr $! "f"
-                                                                     let e = (evalFunction env a)
-                                                                     putStr $! "u"
-                                                                     return $! evalFunction e b
+evalFunction env (SequenceExp a b) = evalFunction (evalFunction env a) b -- here is the problem! I think lazy eval is the problem
+-- evalFunction env (SequenceExp a b) = unsafePerformIO $! evalFunction_innerSeq
+--                                     where evalFunction_innerSeq = do let e = (evalFunction env a)
+--                                                                      return $! evalFunction e b
+
+evalFunction env (EqualsExp (EqualsInOut match out)) = unsafePerformIO $! inner
+                        where inner = do end <- isEOF
+                                         if end then do nums <- matchIntFromStdio
+                                                        let vars = matchVarsToVarnameList match
+                                                        let newEnv = matchUpdateEnv env vars nums
+                                                        e' <- outPatternPrint newEnv out
+                                                        return e'
+                                         else do nums <- matchIntFromStdio
+                                                 let vars = matchVarsToVarnameList match
+                                                 let newEnv = matchUpdateEnv env vars nums
+                                                 putStrLn $ show newEnv
+                                                 e' <- outPatternPrint newEnv out
+                                                 return $ evalFunction e' (EqualsExp (EqualsInOut match out))
 
 matchUpdateEnv :: E -> [String] -> [Int] -> E
 matchUpdateEnv env [] _ = env
@@ -84,20 +96,16 @@ matchVarsToVarnameList EOFMatch = [] -- ?????????
 matchVarsToVarnameList (SingleMatch (Var_ name _)) = [name]
 matchVarsToVarnameList (MultipleMatch (Var_ name _) next) = name : matchVarsToVarnameList next
 
-matchIntFromStdio :: [Int]
-matchIntFromStdio = unsafePerformIO $! matchIntFromStdio_inner
-                    where matchIntFromStdio_inner =  do putStrLn $! "START READ"
-                                                        line <- getLine
-                                                        putStrLn $! "READ OK"
-                                                        return $! (map read $! words line :: [Int])
+matchIntFromStdio :: IO [Int]
+matchIntFromStdio = matchIntFromStdio_inner
+                    where matchIntFromStdio_inner =  do line <- getLine
+                                                        return $ (map read $ words line :: [Int])
 
 isEndOfFile :: Bool
-isEndOfFile = False
--- isEndOfFile = unsafePerformIO $ isEndOfFile_inner
---               where isEndOfFile_inner = do putStrLn "START EOF"
---                                            x <- isEOF
---                                            putStrLn "END EOF"
---                                            return x
+-- isEndOfFile = False
+isEndOfFile = unsafePerformIO $ isEndOfFile_inner
+              where isEndOfFile_inner = do x <- isEOF
+                                           return x
 
 evalMaths :: E -> Maths_ -> Maths_
 evalMaths env (MathsInt int) = (MathsInt int)
@@ -119,7 +127,6 @@ outPatternPrint env EmptyOutPatter = do putStrLn $! ""
 outPatternPrint env (SingleOutPattern (MathsInt i)) = do putStrLn $! show i
                                                          return $! env
 outPatternPrint env (SingleOutPattern (MathsVar name)) =  do putStrLn $! printMvalue $! envGetVar env name
-                                                             putStrLn $! "OUT OK"
                                                              return $! env  
 
 printMvalue :: M -> String
