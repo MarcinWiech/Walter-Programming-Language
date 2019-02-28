@@ -52,10 +52,6 @@ envUpdateOrAppend ((MInt name value):xs) (MInt name' value') | name == name' = (
                                                              | otherwise = (MInt name value) : (envUpdateOrAppend xs (MInt name' value'))
 
 eval1_findMain :: [FuncDeclaration_] -> E -- FuncDeclaration_
--- eval1_findMain ((MainFuncDeclaration (SingleSegue funcname)):ss) = errorWithoutStackTrace "asdad"
-                                                                    --   let (NormalFuncDeclaration fname initArea exp) = findFunctionByName funcname ss
-                                                                    --   unsafePerformIO $ return $ evalFunction (envInit initArea) exp
-                                                                 
 eval1_findMain (MainFuncDeclaration (SingleSegue funcname):ss) = evalFunction (envInit initArea) exp
                                                                  where (NormalFuncDeclaration fname initArea exp) = findFunctionByName funcname ss
 eval1_findMain ((MainFuncDeclaration (MultipleSegue funcname next)):ss) = evalFunction (envInit initArea) exp -- TODO!
@@ -66,18 +62,16 @@ findFunctionByName funcName ((NormalFuncDeclaration funcName' a b):ff) | funcNam
                                                                        | otherwise = findFunctionByName funcName ff
 
 evalFunction :: E -> Exp_ -> E
-evalFunction env (EqualsExp (EqualsInOut match out))   | newEnv == [] = env
-                                                       | otherwise = evalFunction newEnv (SequenceExp (OutPatternExp out) (EqualsExp (EqualsInOut match out)))
-                                                       where newEnv = matchUpdateEnv env (matchVarsToVarnameList match) matchIntFromStdio
+evalFunction env (EqualsExp (EqualsInOut match out)) | isEndOfFile = env
+                                                     | otherwise = evalFunction newEnv (SequenceExp (OutPatternExp out) (EqualsExp (EqualsInOut match out)))
+                                                     where newEnv = matchUpdateEnv env (matchVarsToVarnameList match) matchIntFromStdio
 evalFunction env (OutPatternExp p) = unsafePerformIO $ outPatternPrint env p
 evalFunction env (SequenceExp a b) = evalFunction (evalFunction env a) b
                                         
-matchUpdateEnv :: E -> [String] -> Maybe [Int] -> E
-matchUpdateEnv env [] Nothing = []
-matchUpdateEnv env nn Nothing = []
-matchUpdateEnv env nn (Just []) = env
-matchUpdateEnv env (n:nn) (Just (i:ii)) = matchUpdateEnv (envUpdateOrAppend env (MInt n i)) nn (Just ii)
-matchUpdateEnv env _ _ = env -- error state
+matchUpdateEnv :: E -> [String] -> [Int] -> E
+matchUpdateEnv env [] _ = env
+matchUpdateEnv env nn [] = env
+matchUpdateEnv env (n:nn) (i:ii) = matchUpdateEnv (envUpdateOrAppend env (MInt n i)) nn ii
 
 matchVarsToVarnameList :: Match_ -> [String]
 matchVarsToVarnameList EmptyMatch = []
@@ -85,14 +79,16 @@ matchVarsToVarnameList EOFMatch = [] -- ?????????
 matchVarsToVarnameList (SingleMatch (Var_ name _)) = [name]
 matchVarsToVarnameList (MultipleMatch (Var_ name _) next) = name : matchVarsToVarnameList next
 
-matchIntFromStdio :: Maybe [Int]
+matchIntFromStdio :: [Int]
 matchIntFromStdio = unsafePerformIO matchIntFromStdio_inner
-                    where matchIntFromStdio_inner =  do done <- isEOF
-                                                        if done
-                                                            then return Nothing
-                                                            else do line <- getLine
-                                                                    line1 <- getLine
-                                                                    return $ Just $ (map read $ words line1 :: [Int])
+                    where matchIntFromStdio_inner =  do line <- getLine
+                                                        return $ (map read $ words line :: [Int])
+
+isEndOfFile :: Bool
+isEndOfFile = unsafePerformIO $ isEndOfFile_inner
+              where isEndOfFile_inner = do x <- isEOF
+                                        --    putStrLn $ show x
+                                           return x
 
 evalMaths :: E -> Maths_ -> Maths_
 evalMaths env (MathsInt int) = (MathsInt int)

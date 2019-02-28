@@ -1,5 +1,7 @@
 Problem2:
-{}
+{
+    var1 : Int = 999;
+}
 [a : Int] = [a];
 
 Main:
