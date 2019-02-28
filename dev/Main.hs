@@ -110,24 +110,24 @@ outPatternPrint :: E -> OutPattern_ -> IO ()
 outPatternPrint env EmptyOutPatter = putStr $! ""
 
 outPatternPrint env (SingleOutPattern (MathsInt i)) = do putStr $! show i
-                                                         putStrLn ""
+                                                         putStrLn $! ""
 outPatternPrint env (SingleOutPattern (MathsVar name)) = do putStr $! printMvalue $! envGetVar env name
-                                                            putStrLn ""
+                                                            putStrLn $! ""
 
 outPatternPrint env (MultipleOutPattern (MathsInt i) (SingleOutPattern next)) = do putStr $! show i
-                                                                                   putStr " "
+                                                                                   putStr $! " "
                                                                                    outPatternPrint env (SingleOutPattern next)
 
 outPatternPrint env (MultipleOutPattern (MathsVar name) (SingleOutPattern next)) = do putStr $! printMvalue $! envGetVar env name
-                                                                                      putStr " "
+                                                                                      putStr $! " "
                                                                                       outPatternPrint env (SingleOutPattern next)
 
 outPatternPrint env (MultipleOutPattern (MathsInt i) next) = do putStr $! show i
-                                                                putStr " "
+                                                                putStr $! " "
                                                                 outPatternPrint env next
 
 outPatternPrint env (MultipleOutPattern (MathsVar name) next) = do putStr $! printMvalue $! envGetVar env name
-                                                                   putStr " "
+                                                                   putStr $! " "
                                                                    outPatternPrint env next
 
 
