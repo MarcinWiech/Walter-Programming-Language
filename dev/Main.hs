@@ -12,10 +12,10 @@ import System.IO (isEOF)
 --            putStrLn ("Parsed as " ++ (show parsedProg))
 
 main :: IO ()
-main = do putStrLn $ show $ parseThisFile    
+main = parseThisFile    
 
 
-parseThisFile :: E
+parseThisFile :: IO ()
 parseThisFile = parseThis getProgram
 parseThis s = eval1_findMain $ parseCalc $ alexScanTokens s
 
@@ -52,7 +52,7 @@ envUpdateOrAppend [] (MInt name' value') = [(MInt name' value')]
 envUpdateOrAppend ((MInt name value):xs) (MInt name' value') | name == name' = (MInt name value') : xs
                                                              | otherwise = (MInt name value) : (envUpdateOrAppend xs (MInt name' value'))
 
-eval1_findMain :: [FuncDeclaration_] -> E -- FuncDeclaration_
+eval1_findMain :: [FuncDeclaration_] -> IO () -- FuncDeclaration_
 eval1_findMain (MainFuncDeclaration (SingleSegue funcname):ss) = evalFunction (envInit initArea) exp
                                                                  where (NormalFuncDeclaration fname initArea exp) = findFunctionByName funcname ss
 eval1_findMain ((MainFuncDeclaration (MultipleSegue funcname next)):ss) = evalFunction (envInit initArea) exp -- TODO!
@@ -62,20 +62,19 @@ findFunctionByName :: String -> [FuncDeclaration_] -> FuncDeclaration_
 findFunctionByName funcName ((NormalFuncDeclaration funcName' a b):ff) | funcName == funcName' = (NormalFuncDeclaration funcName' a b)
                                                                        | otherwise = findFunctionByName funcName ff
 
-evalFunction :: E -> Exp_ -> E
-evalFunction env (OutPatternExp p) = do let _ = outPatternPrint env p
-                                        env
+evalFunction :: E -> Exp_ -> IO ()
+evalFunction env (OutPatternExp p) = outPatternPrint env p
 
-evalFunction env (SequenceExp a b) = evalFunction (evalFunction env a) b
+evalFunction env (SequenceExp (e) (OutPatternExp p)) = evalFunction env (OutPatternExp p)
 
-evalFunction env (EqualsExp (EqualsInOut match out)) = unsafePerformIO $! inner
+evalFunction env (EqualsExp (EqualsInOut match out)) = inner
                         where inner = do end <- isEOF
-                                         if end then do return env
+                                         if end then do putStr ""
                                          else do nums <- matchIntFromStdio
                                                  let vars = matchVarsToVarnameList match
                                                  let newEnv = matchUpdateEnv env vars nums
-                                                 _ <- outPatternPrint newEnv out
-                                                 return $ evalFunction newEnv (EqualsExp (EqualsInOut match out))
+                                                 evalFunction newEnv (OutPatternExp out)
+                                                 evalFunction newEnv (EqualsExp (EqualsInOut match out))
 
 matchUpdateEnv :: E -> [String] -> [Int] -> E
 matchUpdateEnv env [] _ = env
@@ -90,8 +89,8 @@ matchVarsToVarnameList (MultipleMatch (Var_ name _) next) = name : matchVarsToVa
 
 matchIntFromStdio :: IO [Int]
 matchIntFromStdio = matchIntFromStdio_inner
-                    where matchIntFromStdio_inner =  do line <- getLine
-                                                        return $ (map read $ words line :: [Int])
+                    where matchIntFromStdio_inner = do line <- getLine
+                                                       return $ (map read $ words line :: [Int])
 
 evalMaths :: E -> Maths_ -> Maths_
 evalMaths env (MathsInt int) = (MathsInt int)
@@ -108,9 +107,27 @@ evalMaths env (MathsTimes x y) = evalMaths env (MathsTimes (evalMaths env x) (ev
 evalMaths env (MathsDevide x y) = evalMaths env (MathsDevide (evalMaths env x) (evalMaths env y))    
 
 outPatternPrint :: E -> OutPattern_ -> IO ()
-outPatternPrint env EmptyOutPatter = do putStrLn $! ""
-outPatternPrint env (SingleOutPattern (MathsInt i)) = do putStrLn $! show i
-outPatternPrint env (SingleOutPattern (MathsVar name)) =  do putStrLn $! printMvalue $! envGetVar env name
+outPatternPrint env EmptyOutPatter = putStr $! ""
+
+outPatternPrint env (SingleOutPattern (MathsInt i)) = do putStr $! show i
+                                                         putStrLn ""
+outPatternPrint env (SingleOutPattern (MathsVar name)) = do putStr $! printMvalue $! envGetVar env name
+                                                            putStrLn ""
+
+outPatternPrint env (MultipleOutPattern (MathsInt i) (SingleOutPattern next)) = do putStr $! show i
+                                                                                   outPatternPrint env (SingleOutPattern next)
+
+outPatternPrint env (MultipleOutPattern (MathsVar name) (SingleOutPattern next)) = do putStr $! printMvalue $! envGetVar env name
+                                                                                      outPatternPrint env (SingleOutPattern next)
+
+outPatternPrint env (MultipleOutPattern (MathsInt i) next) = do putStr $! show i
+                                                                putStr " "
+                                                                outPatternPrint env next
+
+outPatternPrint env (MultipleOutPattern (MathsVar name) next) = do putStr $! printMvalue $! envGetVar env name
+                                                                   putStr " "
+                                                                   outPatternPrint env next
+
 
 printMvalue :: M -> String
 printMvalue (MInt _ v) = show v
