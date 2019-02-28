@@ -65,7 +65,6 @@ findFunctionByName funcName ((NormalFuncDeclaration funcName' a b):ff) | funcNam
 evalFunction :: E -> Exp_ -> IO ()
 evalFunction env (OutPatternExp p) = outPatternPrint env p
 -- NEED TO REMOVE qualsInMaths Match_ Maths_ WTF?!?
-evalFunction env (EqualsExp ())
 
 evalFunction env (EqualsExp (EqualsInOut match out)) = inner
                         where inner = do end <- isEOF
