@@ -69,8 +69,7 @@ Maths : Maths '+' Maths      { MathsPlus $1 $3 }
       | intValue             { MathsInt $1 }
       | var                  { MathsVar $1 }
 
-Equals : var '=' Maths          { EqualsVarMaths $1 $3 }
-         | var '=' B            { EqualsVarBool $1 $3 }
+Equals : var '=' ComparableExp  { Equals_ $1 $3 }
 
 T :  boolType { TBool }
   |  intType  { TInt }
@@ -163,9 +162,7 @@ data OutPattern_ = EmptyOutPatter
                  | SingleOutPattern Maths_
                  deriving Show
 
-data Equals_ = EqualsVarMaths String Maths_
-             | EqualsVarBool String Bool
-             | EqualsVarVar String String -- add comparable for bool assignments
+data Equals_ = Equals_ String ComparableExp_
              deriving Show
 
 data Comparables_ = ComparablesVar String
