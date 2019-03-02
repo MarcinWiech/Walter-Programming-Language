@@ -85,7 +85,7 @@ evalFunction env (SingleMatch var exp) = do end <- isEOF
 evalEquals :: E -> Equals_ -> E
 -- EqualsVarMaths :: vaname = mathsOperation
 evalEquals env (EqualsVarMaths varName (MathsInt v)) = envUpdateOrAppend env (MInt varName v)
-evalEquals env (EqualsVarMaths varName (MathsVar v)) = envUpdateOrAppend env (MInt varName (extraxt $ envGetVar env varName))
+evalEquals env (EqualsVarMaths varName (MathsVar v)) = envUpdateOrAppend env (MInt varName (extraxt $ envGetVar env v))
                                                        where extraxt (MInt _ i) = i
 evalEquals env (EqualsVarMaths varName m) = evalEquals env (EqualsVarMaths varName (evalMaths env m))
 
@@ -98,11 +98,9 @@ evalEquals env (EqualsVarVar varName1 varName2) = envUpdateOrAppend env (assign 
                                                           assign s (MBool _ b) = (MBool s b)
 
 evalExp :: E -> Exp_ -> IO E
-evalExp env (OutPatternExp p) = inner
-                        where inner = do outPatternPrint env p
-                                         return env
-evalExp env (EqualsExp exp) = do _ <- isEOF
-                                 return $! evalEquals env exp
+evalExp env (OutPatternExp p) = do outPatternPrint env p
+                                   return env
+evalExp env (EqualsExp exp) = return $! evalEquals env exp
 evalExp env (SequenceExp exp1 exp2) = do e <- evalExp env exp1
                                          evalExp e exp2
 

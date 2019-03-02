@@ -2,8 +2,9 @@ Problem1:
 {
     var1 : Int = 0;
 }
-[a : Int] = [var1];
+[a : Int] = [var1, a];
             var1 = a;
+            [var1, a];
 
 Problem2:
 {
