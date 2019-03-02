@@ -63,17 +63,6 @@ findFunctionByName funcName ((NormalFuncDeclaration funcName' a b):ff) | funcNam
                                                                        | otherwise = findFunctionByName funcName ff
 
 evalFunction :: E -> Match_ -> IO ()
--- evalFunction env (OutPatternExp p) = outPatternPrint env p
--- -- NEED TO REMOVE qualsInMaths Match_ Maths_ WTF?!?
-
--- evalFunction env (EqualsExp (EqualsInOut match out)) = inner
---                         where inner = do end <- isEOF
---                                          if end then do putStr ""
---                                          else do nums <- matchIntFromStdio
---                                                  let vars = matchVarsToVarnameList match
---                                                  let newEnv = matchUpdateEnv env vars nums
---                                                  evalFunction newEnv (OutPatternExp out)
---                                                  evalFunction newEnv (EqualsExp (EqualsInOut match out))
 evalFunction env (SingleMatch var exp) = do end <- isEOF
                                             if end then do putStr ""
                                             else do nums <- matchIntFromStdio
@@ -170,6 +159,9 @@ outPatternPrint env (MultipleOutPattern (MathsInt i) next) = do putStr $! show i
 outPatternPrint env (MultipleOutPattern (MathsVar name) next) = do putStr $! printMvalue $! envGetVar env name
                                                                    putStr $! " "
                                                                    outPatternPrint env next
+
+outPatternPrint env (SingleOutPattern maths) = outPatternPrint env (SingleOutPattern (evalMaths env maths))
+
 
 
 printMvalue :: M -> String
