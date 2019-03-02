@@ -100,8 +100,11 @@ evalEquals env (EqualsVarVar varName1 varName2) = envUpdateOrAppend env (assign 
 evalExp :: E -> Exp_ -> IO E
 evalExp env (OutPatternExp p) = inner
                         where inner = do outPatternPrint env p
-                                         putStr $! "?"
                                          return env
+evalExp env (EqualsExp exp) = do _ <- isEOF
+                                 return $! evalEquals env exp
+evalExp env (SequenceExp exp1 exp2) = do e <- evalExp env exp1
+                                         evalExp e exp2
 
 
 matchUpdateEnv :: E -> [String] -> [Int] -> E
