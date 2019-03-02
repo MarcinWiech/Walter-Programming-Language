@@ -23,12 +23,15 @@ MotherFakka:
 {
     is : Bool = true;
 }
-[a : Int] = if (is):
+[a : Int] = if (is) {
                 [1]; 
-                is = false; 
-            else:
+                is = false;
+            } 
+            else {
                 [0]; 
                 is = true;
+            }
+            
                
 
 Problem2:
