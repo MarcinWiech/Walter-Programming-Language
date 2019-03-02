@@ -1,8 +1,14 @@
-Problem2:
+Problem1:
 {
     var1 : Int = 999;
 }
 [a : Int] = [a, a, 30, var1, a];
 
+Problem2:
+{
+    var1 : Int = 0;
+}
+[a : Int] = [a+1, a, 30, var1, a];
+
 Main:
-    stdin >> Problem2 >> stdout
+    stdin >> Problem1 >> stdout

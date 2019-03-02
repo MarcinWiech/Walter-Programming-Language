@@ -53,27 +53,34 @@ envUpdateOrAppend ((MInt name value):xs) (MInt name' value') | name == name' = (
                                                              | otherwise = (MInt name value) : (envUpdateOrAppend xs (MInt name' value'))
 
 eval1_findMain :: [FuncDeclaration_] -> IO () -- FuncDeclaration_
-eval1_findMain (MainFuncDeclaration (SingleSegue funcname):ss) = evalFunction (envInit initArea) exp
-                                                                 where (NormalFuncDeclaration fname initArea exp) = findFunctionByName funcname ss
-eval1_findMain ((MainFuncDeclaration (MultipleSegue funcname next)):ss) = evalFunction (envInit initArea) exp -- TODO!
-                                                                          where (NormalFuncDeclaration fname initArea exp) = findFunctionByName funcname ss
+eval1_findMain (MainFuncDeclaration (SingleSegue funcname):ss) = evalFunction (envInit initArea) match
+                                                                 where (NormalFuncDeclaration fname initArea match) = findFunctionByName funcname ss
+eval1_findMain ((MainFuncDeclaration (MultipleSegue funcname next)):ss) = evalFunction (envInit initArea) match -- TODO!
+                                                                          where (NormalFuncDeclaration fname initArea match) = findFunctionByName funcname ss
 
 findFunctionByName :: String -> [FuncDeclaration_] -> FuncDeclaration_
 findFunctionByName funcName ((NormalFuncDeclaration funcName' a b):ff) | funcName == funcName' = (NormalFuncDeclaration funcName' a b)
                                                                        | otherwise = findFunctionByName funcName ff
 
-evalFunction :: E -> Exp_ -> IO ()
-evalFunction env (OutPatternExp p) = outPatternPrint env p
--- NEED TO REMOVE qualsInMaths Match_ Maths_ WTF?!?
+evalFunction :: E -> Match_ -> IO ()
+-- evalFunction env (OutPatternExp p) = outPatternPrint env p
+-- -- NEED TO REMOVE qualsInMaths Match_ Maths_ WTF?!?
 
-evalFunction env (EqualsExp (EqualsInOut match out)) = inner
-                        where inner = do end <- isEOF
-                                         if end then do putStr ""
-                                         else do nums <- matchIntFromStdio
-                                                 let vars = matchVarsToVarnameList match
-                                                 let newEnv = matchUpdateEnv env vars nums
-                                                 evalFunction newEnv (OutPatternExp out)
-                                                 evalFunction newEnv (EqualsExp (EqualsInOut match out))
+-- evalFunction env (EqualsExp (EqualsInOut match out)) = inner
+--                         where inner = do end <- isEOF
+--                                          if end then do putStr ""
+--                                          else do nums <- matchIntFromStdio
+--                                                  let vars = matchVarsToVarnameList match
+--                                                  let newEnv = matchUpdateEnv env vars nums
+--                                                  evalFunction newEnv (OutPatternExp out)
+--                                                  evalFunction newEnv (EqualsExp (EqualsInOut match out))
+evalFunction env (SingleMatch var exp) = do end <- isEOF
+                                            if end then do putStr ""
+                                            else do nums <- matchIntFromStdio
+                                                    let vars = matchVarsToVarnameList (SingleMatch var exp)
+                                                    let newEnv = matchUpdateEnv env vars nums
+                                                    newEnv' <- evalExp newEnv exp
+                                                    evalFunction newEnv' (SingleMatch var exp)
 
 evalEquals :: E -> Equals_ -> E
 -- EqualsVarMaths :: vaname = mathsOperation
@@ -89,7 +96,12 @@ evalEquals env (EqualsVarBool varName b) = envUpdateOrAppend env (MBool varName 
 evalEquals env (EqualsVarVar varName1 varName2) = envUpdateOrAppend env (assign varName1 (envGetVar env varName2))
                                                     where assign s (MInt _ i) = (MInt s i)
                                                           assign s (MBool _ b) = (MBool s b)
-                                                          
+
+evalExp :: E -> Exp_ -> IO E
+evalExp env (OutPatternExp p) = inner
+                        where inner = do outPatternPrint env p
+                                         putStr $! "?"
+                                         return env
 
 
 matchUpdateEnv :: E -> [String] -> [Int] -> E
@@ -100,7 +112,7 @@ matchUpdateEnv env (n:nn) (i:ii) = matchUpdateEnv (envUpdateOrAppend env (MInt n
 matchVarsToVarnameList :: Match_ -> [String]
 matchVarsToVarnameList EmptyMatch = []
 matchVarsToVarnameList EOFMatch = [] -- ?????????
-matchVarsToVarnameList (SingleMatch (Var_ name _)) = [name]
+matchVarsToVarnameList (SingleMatch (Var_ name _) _) = [name]
 matchVarsToVarnameList (MultipleMatch (Var_ name _) next) = name : matchVarsToVarnameList next
 
 matchIntFromStdio :: IO [Int]

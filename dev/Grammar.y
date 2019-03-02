@@ -51,7 +51,7 @@ import Tokens
 prods : FuncDeclaration                   { [$1] }
       | prods FuncDeclaration             { $2 : $1 }
 
-FuncDeclaration : funcName ':' FuncBodyInitArea Exp     { NormalFuncDeclaration $1 $3 $4 }
+FuncDeclaration : funcName ':' FuncBodyInitArea Match     { NormalFuncDeclaration $1 $3 $4 }
                 | Main                                  { MainFuncDeclaration $1 }
 
 Exp : Cond                   { CondExp $1 }
@@ -69,12 +69,8 @@ Maths : Maths '+' Maths      { MathsPlus $1 $3 }
       | intValue             { MathsInt $1 }
       | var                  { MathsVar $1 }
 
-Equals : Match '=' OutPattern { EqualsInOut $1 $3 }
-       | Match '=' Maths      { EqualsInMaths $1 $3 }
-       | Match '=' Equals     { EqualsInEquals $1 $3}
-       | Match '=' Cond       { EqualsInCond $1 $3 }
-       | var '=' Maths        { EqualsVarMaths $1 $3 }
-       | var '=' B            { EqualsVarBool $1 $3 }
+Equals : var '=' Maths          { EqualsVarMaths $1 $3 }
+         | var '=' B            { EqualsVarBool $1 $3 }
 
 T :  boolType { TBool }
   |  intType  { TInt }
@@ -89,10 +85,10 @@ VarInit : Var '=' intValue { VarIntInit_ $1 $3}
 
 Match : '['']'                 { EmptyMatch }
       | '[' eof ']'            { EOFMatch }
-      | '[' Var ']'            { SingleMatch $2 }
+      | '[' Var ']' '=' Exp    { SingleMatch $2 $5 }
       | '[' Var ',' MatchRec   { MultipleMatch $2 $4 }
 
-MatchRec : Var ']'           { SingleMatch $1 }
+MatchRec : Var ']' '=' Exp   { SingleMatch $1 $4 }
          | Var ',' MatchRec  { MultipleMatch $1 $3 }
 
 OutPattern : '['']'                         { EmptyOutPatter }
@@ -145,7 +141,7 @@ data VarInit_ = VarIntInit_ Var_ Int
 data Match_ = EmptyMatch
             | EOFMatch
             | MultipleMatch Var_ Match_
-            | SingleMatch Var_
+            | SingleMatch Var_ Exp_
             deriving Show
 
 data Exp_ = CondExp Cond_
@@ -167,11 +163,7 @@ data OutPattern_ = EmptyOutPatter
                  | SingleOutPattern Maths_
                  deriving Show
 
-data Equals_ = EqualsInOut Match_ OutPattern_
-             | EqualsInMaths Match_ Maths_
-             | EqualsInEquals Match_ Equals_
-             | EqualsInCond Match_ Cond_
-             | EqualsVarMaths String Maths_
+data Equals_ = EqualsVarMaths String Maths_
              | EqualsVarBool String Bool
              | EqualsVarVar String String -- add comparable for bool assignments
              deriving Show
@@ -196,7 +188,7 @@ data FuncBodyInitArea_ = EmptyInitArea
                        | MultipleInitArea VarInit_ FuncBodyInitArea_
                        deriving Show
 
-data FuncDeclaration_ = NormalFuncDeclaration String FuncBodyInitArea_ Exp_ 
+data FuncDeclaration_ = NormalFuncDeclaration String FuncBodyInitArea_ Match_
                       | MainFuncDeclaration Main_ 
                       deriving Show
 
