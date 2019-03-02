@@ -82,10 +82,22 @@ evalFunction env (SingleMatch var exp) = do end <- isEOF
                                                     newEnv' <- evalExp newEnv exp
                                                     evalFunction newEnv' (SingleMatch var exp)
 
+evalFunction env (MultipleMatch var next) = do end <- isEOF
+                                               if end then do putStr ""
+                                               else do nums <- matchIntFromStdio
+                                                       let vars = matchVarsToVarnameList (MultipleMatch var next)
+                                                       let newEnv = matchUpdateEnv env vars nums
+                                                       newEnv' <- evalExp newEnv (getExpFromMultipleMatch next)
+                                                       evalFunction newEnv' (MultipleMatch var next)
+
+getExpFromMultipleMatch :: Match_ -> Exp_
+getExpFromMultipleMatch (SingleMatch _ exp) = exp
+getExpFromMultipleMatch (MultipleMatch _ next) = getExpFromMultipleMatch next
+
 evalEquals :: E -> Equals_ -> E
 -- EqualsVarMaths :: vaname = mathsOperation
 evalEquals env (EqualsVarMaths varName (MathsInt v)) = envUpdateOrAppend env (MInt varName v)
-evalEquals env (EqualsVarMaths varName (MathsVar v)) = envUpdateOrAppend env (MInt varName (extraxt $ envGetVar env v))
+evalEquals env (EqualsVarMaths varName (MathsVar n)) = envUpdateOrAppend env (MInt varName (extraxt $ envGetVar env n))
                                                        where extraxt (MInt _ i) = i
 evalEquals env (EqualsVarMaths varName m) = evalEquals env (EqualsVarMaths varName (evalMaths env m))
 

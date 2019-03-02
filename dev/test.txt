@@ -2,9 +2,9 @@ Problem1:
 {
     var1 : Int = 0;
 }
-[a : Int] = [var1, a];
-            var1 = a;
-            [var1, a];
+[a : Int, b : Int] = 
+            var1 = b*3;
+            [a, var1];
 
 Problem2:
 {
