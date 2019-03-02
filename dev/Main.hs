@@ -161,7 +161,7 @@ outPatternPrint env (MultipleOutPattern (MathsVar name) next) = do putStr $! pri
                                                                    outPatternPrint env next
 
 outPatternPrint env (SingleOutPattern maths) = outPatternPrint env (SingleOutPattern (evalMaths env maths))
-
+outPatternPrint env (MultipleOutPattern maths next) = outPatternPrint env (MultipleOutPattern (evalMaths env maths) next)
 
 
 printMvalue :: M -> String
