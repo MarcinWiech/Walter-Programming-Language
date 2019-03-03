@@ -25,7 +25,7 @@ MotherFakka:
 }
 [a : Int] = if (is) 
             {
-                if(a > 2)
+                if(a % 2 == 0)
                 {
                     [a];
                 }
@@ -39,7 +39,15 @@ MotherFakka:
                 [0]; 
                 is = true;
             }
-            
+
+TestMod:
+{}
+[a : Int] = if(3 >= 2 || 3<= 2){
+    [a]
+}
+else {
+    [a % 2]
+}
                
 
 Problem2:
@@ -49,4 +57,4 @@ Problem2:
 [a : Int] = [a+1, a, 30, var1, a];
 
 Main:
-    stdin >> Problem1 >> stdout
+    stdin >> TestMod >> stdout

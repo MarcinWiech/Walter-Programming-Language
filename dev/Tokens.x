@@ -18,6 +18,7 @@ $white+       ;
   \+            { tok (\p s -> TokenPlus p) }
   \-            { tok (\p s -> TokenMinus p) }
   \*            { tok (\p s -> TokenTimes p) }
+  \%            { tok (\p s -> TokenMod p) }
   \/            { tok (\p s -> TokenDiv p) }
   \(            { tok (\p s -> TokenLParen p) }
   \)            { tok (\p s -> TokenRParen p) }
@@ -40,6 +41,10 @@ $white+       ;
   true          { tok (\p s -> TokenTrueValue p) }
   false         { tok (\p s -> TokenFalseValue p) }
   "=="          { tok (\p s -> TokenCompare p) }
+  ">="          { tok (\p s -> TokenGreaterOrEqual p) }
+  "<="          { tok (\p s -> TokenSmallerOrEqual p) }
+  "&&"          { tok (\p s -> TokenAnd p) }
+  "||"          { tok (\p s -> TokenOr p) }
   \!            { tok (\p s -> TokenNot p) }
   \<            { tok (\p s -> TokenSmallerThan p) }
   \>            { tok (\p s -> TokenGreaterThan p) }
@@ -61,6 +66,7 @@ data Token =
   TokenPlus AlexPosn       |
   TokenMinus AlexPosn      |
   TokenTimes AlexPosn      |
+  TokenMod AlexPosn        |
   TokenDiv AlexPosn        |
   TokenLParen AlexPosn     |
   TokenRParen AlexPosn     |
@@ -83,6 +89,10 @@ data Token =
   TokenSemiColon AlexPosn       |
   TokenTrueValue AlexPosn       |
   TokenCompare AlexPosn         |
+  TokenSmallerOrEqual AlexPosn  |
+  TokenGreaterOrEqual AlexPosn  |
+  TokenAnd AlexPosn             |
+  TokenOr AlexPosn              |
   TokenNot AlexPosn             |
   TokenFalseValue AlexPosn      |
   TokenSmallerThan AlexPosn     |
@@ -99,6 +109,7 @@ tokenPosn (TokenEq  (AlexPn a l c)) = show(l) ++ ":" ++ show(c)
 tokenPosn (TokenPlus (AlexPn a l c)) = show(l) ++ ":" ++ show(c)
 tokenPosn (TokenMinus (AlexPn a l c)) = show(l) ++ ":" ++ show(c)
 tokenPosn (TokenTimes (AlexPn a l c)) = show(l) ++ ":" ++ show(c)
+tokenPosn (TokenMod (AlexPn a l c)) = show(l) ++ ":" ++ show(c)
 tokenPosn (TokenDiv (AlexPn a l c)) = show(l) ++ ":" ++ show(c)
 tokenPosn (TokenLParen (AlexPn a l c)) = show(l) ++ ":" ++ show(c)
 tokenPosn (TokenRParen (AlexPn a l c)) = show(l) ++ ":" ++ show(c)
@@ -120,6 +131,10 @@ tokenPosn (TokenSemiColon (AlexPn a l c)) = show(l) ++ ":" ++ show(c)
 tokenPosn (TokenTrueValue (AlexPn a l c)) = show(l) ++ ":" ++ show(c)
 tokenPosn (TokenFalseValue (AlexPn a l c)) = show(l) ++ ":" ++ show(c)
 tokenPosn (TokenCompare (AlexPn a l c)) = show(l) ++ ":" ++ show(c)
+tokenPosn (TokenSmallerOrEqual (AlexPn a l c)) = show(l) ++ ":" ++ show(c)
+tokenPosn (TokenGreaterOrEqual (AlexPn a l c)) = show(l) ++ ":" ++ show(c)
+tokenPosn (TokenAnd (AlexPn a l c)) = show(l) ++ ":" ++ show(c)
+tokenPosn (TokenOr (AlexPn a l c)) = show(l) ++ ":" ++ show(c)
 tokenPosn (TokenNot (AlexPn a l c)) = show(l) ++ ":" ++ show(c)
 tokenPosn (TokenSmallerThan (AlexPn a l c)) = show(l) ++ ":" ++ show(c)
 tokenPosn (TokenGreaterThan (AlexPn a l c)) = show(l) ++ ":" ++ show(c)

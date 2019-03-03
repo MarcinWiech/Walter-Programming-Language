@@ -133,15 +133,18 @@ evalMaths env (MathsNegative (MathsInt int)) = (MathsInt (-int))
 evalMaths env (MathsNegative maths) = evalMaths env (MathsNegative (evalMaths env maths))
 evalMaths env (MathsVar name) = convert (envGetVar env name)
                          where convert (MInt _ v) = MathsInt v
+
 evalMaths env (MathsPlus (MathsInt x) (MathsInt y)) = MathsInt (x+y) 
 evalMaths env (MathsMinus (MathsInt x) (MathsInt y)) = MathsInt (x-y)
 evalMaths env (MathsTimes (MathsInt x) (MathsInt y)) = MathsInt (x*y)
 evalMaths env (MathsDevide (MathsInt x) (MathsInt y)) = MathsInt (x `div` y)
+evalMaths env (MathsMod (MathsInt x) (MathsInt y)) = MathsInt (x `mod` y) 
 
 evalMaths env (MathsPlus x y) = evalMaths env (MathsPlus (evalMaths env x) (evalMaths env y))  
 evalMaths env (MathsMinus x y) = evalMaths env (MathsMinus (evalMaths env x) (evalMaths env y)) 
 evalMaths env (MathsTimes x y) = evalMaths env (MathsTimes (evalMaths env x) (evalMaths env y))  
 evalMaths env (MathsDevide x y) = evalMaths env (MathsDevide (evalMaths env x) (evalMaths env y))
+evalMaths env (MathsMod x y) = evalMaths env (MathsMod (evalMaths env x) (evalMaths env y))  
 
 outPatternPrint :: E -> OutPattern_ -> IO ()
 outPatternPrint env EmptyOutPatter = putStr $! ""
@@ -183,9 +186,22 @@ evalComparableExp env (ComparableExpSingle (ComparablesMaths (MathsVar s))) = ex
 
 evalComparableExp env (EqualsTo  (ComparableExpSingle (ComparablesMaths (MathsInt a))) (ComparableExpSingle (ComparablesMaths (MathsInt b))) ) = a == b
 evalComparableExp env (EqualsTo (ComparableExpSingle (ComparablesMaths (MathsVar a))) (ComparableExpSingle (ComparablesMaths (MathsVar b))) ) = (extractIntFromEnv env a) == (extractIntFromEnv env b)
+evalComparableExp env (EqualsTo  (ComparableExpSingle (ComparablesBool  a)) (ComparableExpSingle (ComparablesBool b)) ) = a == b
+
+evalComparableExp env (Or  (ComparableExpSingle (ComparablesBool  a)) (ComparableExpSingle (ComparablesBool b)) ) = a || b
+evalComparableExp env (Or (ComparableExpSingle (ComparablesMaths (MathsVar a))) (ComparableExpSingle (ComparablesMaths (MathsVar b))) ) = (extractBoolFromEnv env a) || (extractBoolFromEnv env b)
+
+evalComparableExp env (And  (ComparableExpSingle (ComparablesBool  a)) (ComparableExpSingle (ComparablesBool b)) ) = a && b
+evalComparableExp env (And (ComparableExpSingle (ComparablesMaths (MathsVar a))) (ComparableExpSingle (ComparablesMaths (MathsVar b))) ) = (extractBoolFromEnv env a) && (extractBoolFromEnv env b)
 
 evalComparableExp env (GreaterThan  (ComparableExpSingle (ComparablesMaths (MathsInt a))) (ComparableExpSingle (ComparablesMaths (MathsInt b))) ) = a > b
 evalComparableExp env (GreaterThan (ComparableExpSingle (ComparablesMaths (MathsVar a))) (ComparableExpSingle (ComparablesMaths (MathsVar b))) ) = (extractIntFromEnv env a) > (extractIntFromEnv env b)
+
+evalComparableExp env (GreaterOrEqual  (ComparableExpSingle (ComparablesMaths (MathsInt a))) (ComparableExpSingle (ComparablesMaths (MathsInt b))) ) = a >= b
+evalComparableExp env (GreaterOrEqual (ComparableExpSingle (ComparablesMaths (MathsVar a))) (ComparableExpSingle (ComparablesMaths (MathsVar b))) ) = (extractIntFromEnv env a) >= (extractIntFromEnv env b)
+
+evalComparableExp env (SmallerOrEqual  (ComparableExpSingle (ComparablesMaths (MathsInt a))) (ComparableExpSingle (ComparablesMaths (MathsInt b))) ) = a <= b
+evalComparableExp env (SmallerOrEqual (ComparableExpSingle (ComparablesMaths (MathsVar a))) (ComparableExpSingle (ComparablesMaths (MathsVar b))) ) = (extractIntFromEnv env a) <= (extractIntFromEnv env b)
 
 evalComparableExp env (SmallerThan  (ComparableExpSingle (ComparablesMaths (MathsInt a))) (ComparableExpSingle (ComparablesMaths (MathsInt b))) ) = a < b
 evalComparableExp env (SmallerThan (ComparableExpSingle (ComparablesMaths (MathsVar a))) (ComparableExpSingle (ComparablesMaths (MathsVar b))) ) = (extractIntFromEnv env a) < (extractIntFromEnv env b)
@@ -193,4 +209,11 @@ evalComparableExp env (SmallerThan (ComparableExpSingle (ComparablesMaths (Maths
 evalComparableExp env (EqualsTo (ComparableExpSingle (ComparablesMaths maths1)) (ComparableExpSingle (ComparablesMaths maths2))) = evalComparableExp env (EqualsTo (ComparableExpSingle (ComparablesMaths (evalMaths env maths1))) (ComparableExpSingle (ComparablesMaths (evalMaths env maths2))))
 evalComparableExp env (GreaterThan (ComparableExpSingle (ComparablesMaths maths1)) (ComparableExpSingle (ComparablesMaths maths2))) = evalComparableExp env (GreaterThan (ComparableExpSingle (ComparablesMaths (evalMaths env maths1))) (ComparableExpSingle (ComparablesMaths (evalMaths env maths2))))
 evalComparableExp env (SmallerThan (ComparableExpSingle (ComparablesMaths maths1)) (ComparableExpSingle (ComparablesMaths maths2))) = evalComparableExp env (SmallerThan (ComparableExpSingle (ComparablesMaths (evalMaths env maths1))) (ComparableExpSingle (ComparablesMaths (evalMaths env maths2))))
+evalComparableExp env (GreaterOrEqual (ComparableExpSingle (ComparablesMaths maths1)) (ComparableExpSingle (ComparablesMaths maths2))) = evalComparableExp env (GreaterOrEqual (ComparableExpSingle (ComparablesMaths (evalMaths env maths1))) (ComparableExpSingle (ComparablesMaths (evalMaths env maths2))))
+evalComparableExp env (SmallerOrEqual (ComparableExpSingle (ComparablesMaths maths1)) (ComparableExpSingle (ComparablesMaths maths2))) = evalComparableExp env (SmallerOrEqual (ComparableExpSingle (ComparablesMaths (evalMaths env maths1))) (ComparableExpSingle (ComparablesMaths (evalMaths env maths2))))
 
+evalComparableExp env (Or (ComparableExpSingle (ComparablesMaths maths1)) (ComparableExpSingle (ComparablesMaths maths2))) = evalComparableExp env (Or (ComparableExpSingle (ComparablesMaths (evalMaths env maths1))) (ComparableExpSingle (ComparablesMaths (evalMaths env maths2))))
+evalComparableExp env (Or compExp1 compExp2 ) = evalComparableExp env (Or (ComparableExpSingle (ComparablesBool (evalComparableExp env compExp1))) (ComparableExpSingle (ComparablesBool (evalComparableExp env compExp2))))
+
+evalComparableExp env (And (ComparableExpSingle (ComparablesMaths maths1)) (ComparableExpSingle (ComparablesMaths maths2))) = evalComparableExp env (And (ComparableExpSingle (ComparablesMaths (evalMaths env maths1))) (ComparableExpSingle (ComparablesMaths (evalMaths env maths2))))
+evalComparableExp env (And compExp1 compExp2 ) = evalComparableExp env (And (ComparableExpSingle (ComparablesBool (evalComparableExp env compExp1))) (ComparableExpSingle (ComparablesBool (evalComparableExp env compExp2))))

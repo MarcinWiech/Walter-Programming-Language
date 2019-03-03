@@ -15,7 +15,8 @@ import Tokens
     '='        { TokenEq _ } 
     '+'        { TokenPlus _ } 
     '-'        { TokenMinus _ } 
-    '*'        { TokenTimes _ } 
+    '*'        { TokenTimes _ }
+    '%'        { TokenMod _ }  
     '/'        { TokenDiv _ } 
     '('        { TokenLParen _ } 
     ')'        { TokenRParen _ }
@@ -37,6 +38,10 @@ import Tokens
     trueValue  { TokenTrueValue _ }
     falseValue { TokenFalseValue _ }
     '=='       { TokenCompare _ }
+    '>='       { TokenGreaterOrEqual _ }
+    '<='       { TokenSmallerOrEqual _ }
+    '&&'       { TokenAnd _ }
+    '||'       { TokenOr _ }
     '!'        { TokenNot _ }
     '<'        { TokenSmallerThan _ }
     '>'        { TokenGreaterThan _ }
@@ -44,8 +49,8 @@ import Tokens
     stdout     { TokenStdout _ }
 
 %right ';'
-%left '+' '-' '*' '/' '<' '>' '==' '!' '>>'
-%nonassoc if else eof intType boolType main trueValue falseValue stdin stdout ':' '(' ')' '[' ']' ',' '{' '}'
+%left '+' '-' '*' '/' '<' '>' '==' '!' '>>' '%' '&&' '||'
+%nonassoc if else eof intType boolType main trueValue falseValue stdin stdout ':' '(' ')' '[' ']' ',' '{' '}' '<=' '>='
 
 %%
 prods : FuncDeclaration                   { [$1] }
@@ -66,6 +71,7 @@ Maths : Maths '+' Maths      { MathsPlus $1 $3 }
       | Maths '-' Maths      { MathsMinus $1 $3 }
       | Maths '*' Maths      { MathsTimes $1 $3 }
       | Maths '/' Maths      { MathsDevide $1 $3 }
+      | Maths '%' Maths      { MathsMod $1 $3 }
       | '(' Maths ')'        { $2 }
       | '-' Maths            { MathsNegative $2 }
       | intValue             { MathsInt $1 }
@@ -105,6 +111,10 @@ Comparables : Maths       { ComparablesMaths $1 }
 ComparableExp : ComparableExp '==' ComparableExp { EqualsTo $1 $3 }
               | ComparableExp '<' ComparableExp  { SmallerThan $1 $3 }
               | ComparableExp '>' ComparableExp  { GreaterThan $1 $3 }
+              | ComparableExp '>=' ComparableExp { GreaterOrEqual $1 $3 }
+              | ComparableExp '<=' ComparableExp { SmallerOrEqual $1 $3 }
+              | ComparableExp '&&' ComparableExp { And $1 $3 }
+              | ComparableExp '||' ComparableExp { Or $1 $3 }
               | '!' ComparableExp                { Not $2 }
               | '(' ComparableExp ')'            { $2 }
               | Comparables                      { ComparableExpSingle $1 }
@@ -155,6 +165,7 @@ data Maths_ = MathsPlus Maths_ Maths_
             | MathsMinus Maths_ Maths_
             | MathsTimes Maths_ Maths_
             | MathsDevide Maths_ Maths_
+            | MathsMod Maths_ Maths_
             | MathsNegative Maths_
             | MathsInt Int
             | MathsVar String
@@ -177,6 +188,10 @@ data Comparables_ = ComparablesVar String
 data ComparableExp_ = EqualsTo ComparableExp_ ComparableExp_
                     | SmallerThan ComparableExp_ ComparableExp_
                     | GreaterThan ComparableExp_ ComparableExp_
+                    | SmallerOrEqual ComparableExp_ ComparableExp_
+                    | GreaterOrEqual ComparableExp_ ComparableExp_
+                    | And ComparableExp_ ComparableExp_
+                    | Or ComparableExp_ ComparableExp_
                     | Not ComparableExp_
                     | ComparableExpSingle Comparables_
                     deriving Show
