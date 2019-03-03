@@ -42,11 +42,11 @@ MotherFakka:
 
 TestMod:
 {}
-[a : Int] = if(3 >= 2 || 3<= 2){
-    [a]
+[a : Int] = if(3 >= 2 && 3<= 2){
+    a = 100;
 }
 else {
-    [a % 2]
+    [a % 2];
 }
                
 
