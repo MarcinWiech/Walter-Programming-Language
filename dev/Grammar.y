@@ -90,8 +90,8 @@ Var : var ':' T { Var_ $1 $3 }
 VarInit : Var '=' intValue { VarIntInit_ $1 $3}
         | Var '=' B        { VarBoolInit_ $1 $3}
 
-Match : '['']'                 { EmptyMatch }
-      | '[' eof ']'            { EOFMatch }
+Match : '['']' '=' Exp         { EmptyMatch $4 }
+      | '[' eof ']' '=' Exp    { EOFMatch $5 }
       | '[' Var ']' '=' Exp    { SingleMatch $2 $5 }
       | '[' Var ',' MatchRec   { MultipleMatch $2 $4 }
 
@@ -149,8 +149,8 @@ data VarInit_ = VarIntInit_ Var_ Int
               | VarBoolInit_ Var_ Bool 
               deriving Show
 
-data Match_ = EmptyMatch
-            | EOFMatch
+data Match_ = EmptyMatch Exp_
+            | EOFMatch Exp_
             | MultipleMatch Var_ Match_
             | SingleMatch Var_ Exp_
             deriving Show

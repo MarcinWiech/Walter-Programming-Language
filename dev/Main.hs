@@ -72,6 +72,11 @@ findFunctionByName funcName ((NormalFuncDeclaration funcName' a b):ff) | funcNam
                                                                        | otherwise = findFunctionByName funcName ff
 
 evalFunction :: E -> Match_ -> IO ()
+evalFunction env (EmptyMatch exp) = do end <- isEOF
+                                       if end then do putStr ""
+                                       else do _ <- matchIntFromStdio
+                                               newEnv' <- evalExp env exp
+                                               evalFunction newEnv' (EmptyMatch exp)
 evalFunction env (SingleMatch var exp) = do end <- isEOF
                                             if end then do putStr ""
                                             else do nums <- matchIntFromStdio
@@ -117,8 +122,8 @@ matchUpdateEnv env nn [] = env
 matchUpdateEnv env (n:nn) (i:ii) = matchUpdateEnv (envUpdateOrAppend env (MInt n i)) nn ii
 
 matchVarsToVarnameList :: Match_ -> [String]
-matchVarsToVarnameList EmptyMatch = []
-matchVarsToVarnameList EOFMatch = [] -- ?????????
+matchVarsToVarnameList (EmptyMatch _) = []
+matchVarsToVarnameList (EOFMatch _) = [] -- ?????????
 matchVarsToVarnameList (SingleMatch (Var_ name _) _) = [name]
 matchVarsToVarnameList (MultipleMatch (Var_ name _) next) = name : matchVarsToVarnameList next
 
