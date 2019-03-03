@@ -4,7 +4,7 @@ Problem1:
 }
 [a : Int, b : Int] = 
             var1 = b*3;
-            [a, b*3];
+            [-a-(-2), -b*3];
 
 Problem5: 
 {
@@ -23,9 +23,17 @@ MotherFakka:
 {
     is : Bool = true;
 }
-[a : Int] = if (is) {
-                [1]; 
-                is = false;
+[a : Int] = if (is) 
+            {
+                if(a > 2)
+                {
+                    [a];
+                }
+                else
+                {
+                    [a+1000];
+                }
+                is = (2 == a);
             } 
             else {
                 [0]; 
@@ -41,4 +49,4 @@ Problem2:
 [a : Int] = [a+1, a, 30, var1, a];
 
 Main:
-    stdin >> MotherFakka >> stdout
+    stdin >> Problem1 >> stdout

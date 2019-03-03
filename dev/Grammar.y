@@ -58,7 +58,8 @@ Exp : Cond                   { CondExp $1 }
     | Equals                 { EqualsExp $1 }
     | OutPattern             { OutPatternExp $1 }
     | '(' Exp ')'            { $2 }
-    | Exp ';' Exp            { SequenceExp $1 $3 } -- this will only appear on the left of a match statement -> refactor then
+    | Exp ';' Exp            { SequenceExp $1 $3 }
+    | Cond Exp               { SequenceExp (CondExp $1) $2 }
     | Exp ';'                { $1 }
 
 Maths : Maths '+' Maths      { MathsPlus $1 $3 }
@@ -66,6 +67,7 @@ Maths : Maths '+' Maths      { MathsPlus $1 $3 }
       | Maths '*' Maths      { MathsTimes $1 $3 }
       | Maths '/' Maths      { MathsDevide $1 $3 }
       | '(' Maths ')'        { $2 }
+      | '-' Maths            { MathsNegative $2 }
       | intValue             { MathsInt $1 }
       | var                  { MathsVar $1 }
 
@@ -153,6 +155,7 @@ data Maths_ = MathsPlus Maths_ Maths_
             | MathsMinus Maths_ Maths_
             | MathsTimes Maths_ Maths_
             | MathsDevide Maths_ Maths_
+            | MathsNegative Maths_
             | MathsInt Int
             | MathsVar String
             deriving Show

@@ -129,6 +129,8 @@ matchIntFromStdio = matchIntFromStdio_inner
 
 evalMaths :: E -> Maths_ -> Maths_
 evalMaths env (MathsInt int) = (MathsInt int)
+evalMaths env (MathsNegative (MathsInt int)) = (MathsInt (-int))
+evalMaths env (MathsNegative maths) = evalMaths env (MathsNegative (evalMaths env maths))
 evalMaths env (MathsVar name) = convert (envGetVar env name)
                          where convert (MInt _ v) = MathsInt v
 evalMaths env (MathsPlus (MathsInt x) (MathsInt y)) = MathsInt (x+y) 
