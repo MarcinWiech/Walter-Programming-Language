@@ -159,6 +159,7 @@ data Exp_ = CondExp Cond_
           | EqualsExp Equals_
           | OutPatternExp OutPattern_
           | SequenceExp Exp_ Exp_
+          | SegueToFunction String [String] [Maths_]
           deriving Show
 
 data Maths_ = MathsPlus Maths_ Maths_
