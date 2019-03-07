@@ -5,6 +5,8 @@ import Control.Exception
 import System.IO
 import System.IO.Unsafe (unsafePerformIO)
 import System.IO (isEOF)
+-- will read file lazyly, save as states
+
 
 main :: IO ()
 main = parseThisFile    
