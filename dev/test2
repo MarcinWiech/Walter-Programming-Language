@@ -17,5 +17,14 @@ x : Int = 0;
                var1 = var2;
 	           var2 = x;
 
+Problem3:
+{}
+[a : Int, b : Int] = [a+1, b+1]
+
+Problem4:
+{}
+[c : Int, d : Int] = [c+1, d+1]
+
+
 Main:
-    stdin >> Problem1 >> stdout
+    stdin >> Problem4 >> Problem3 >> stdout

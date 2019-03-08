@@ -27,7 +27,7 @@ type E = [(String,[M])]
 getFunctionEnvironment :: String -> E -> [M]
 getFunctionEnvironment fName [] = []
 getFunctionEnvironment fName ((fName', vars):xs) | fName' == fName = vars
-                                                  | otherwise = getFunctionEnvironment fName xs
+                                                 | otherwise = getFunctionEnvironment fName xs
 
 
 -- envInit :: FuncBodyInitArea_ -> String -> E
@@ -39,7 +39,7 @@ envInit ((NormalFuncDeclaration funcName initArea _):xs) = (funcName, (envInitNo
 
 replaceFuncEnv :: String -> E -> [M] -> E
 replaceFuncEnv fName ((fName', old):xs) new | fName == fName' = (fName, new) : xs
-                                            | otherwise = replaceFuncEnv fName xs new
+                                            | otherwise = (fName', old):(replaceFuncEnv fName xs new)
 
 --helper for envInit
 envInitNoFunctionName :: FuncBodyInitArea_ -> [M]
@@ -101,36 +101,36 @@ envUpdateOrAppendInner ((MBool name value):xs) (MBool name' value') | name == na
 envUpdateOrAppendInner (x:xs) m = x : envUpdateOrAppendInner xs m
 
 eval1_findMain :: [FuncDeclaration_] -> IO () -- FuncDeclaration_
-eval1_findMain (MainFuncDeclaration (SingleSegue funcname):ss) = evalFunction funcname (envInit ss) match
+eval1_findMain (MainFuncDeclaration (SingleSegue funcname):ss) = evalFunction funcname (envInit ss) ss match
                                                                  where (NormalFuncDeclaration fname initArea match) = findFunctionByName funcname ss
-eval1_findMain ((MainFuncDeclaration (MultipleSegue funcname next)):ss) = evalFunction funcname (envInit ss) match -- TODO!
+eval1_findMain ((MainFuncDeclaration (MultipleSegue funcname next)):ss) = evalFunction funcname (envInit ss) ss match -- TODO!
                                                                           where (NormalFuncDeclaration fname initArea match) = findFunctionByName funcname ss
 
 findFunctionByName :: String -> [FuncDeclaration_] -> FuncDeclaration_
 findFunctionByName funcName ((NormalFuncDeclaration funcName' a b):ff) | funcName == funcName' = (NormalFuncDeclaration funcName' a b)
                                                                        | otherwise = findFunctionByName funcName ff
 
-evalFunction :: String -> E -> Match_ -> IO ()
-evalFunction fName env (EmptyMatch exp) = do end <- isEOF
-                                             if end then do putStr ""
-                                             else do _ <- matchIntFromStdio
-                                                     newEnv' <- evalExp fName env exp
-                                                     evalFunction fName newEnv' (EmptyMatch exp)
-evalFunction fName env (SingleMatch var exp) = do end <- isEOF
-                                                  if end then do putStr ""
-                                                  else do nums <- matchIntFromStdio
-                                                          let vars = matchVarsToVarnameList (SingleMatch var exp)
-                                                          let newEnv = matchUpdateEnv fName env vars nums
-                                                          newEnv' <- evalExp fName newEnv exp
-                                                          evalFunction fName newEnv' (SingleMatch var exp)
+evalFunction :: String -> E -> [FuncDeclaration_] -> Match_ -> IO ()
+evalFunction fName env funcs (EmptyMatch exp) = do end <- isEOF
+                                                   if end then do putStr ""
+                                                   else do _ <- matchIntFromStdio
+                                                           newEnv' <- evalExp fName env funcs exp
+                                                           evalFunction fName newEnv' funcs (EmptyMatch exp)
+evalFunction fName env funcs (SingleMatch var exp) = do end <- isEOF
+                                                        if end then do putStr ""
+                                                        else do nums <- matchIntFromStdio
+                                                                let vars = matchVarsToVarnameList (SingleMatch var exp)
+                                                                let newEnv = matchUpdateEnv fName env vars nums
+                                                                newEnv' <- evalExp fName newEnv funcs exp
+                                                                evalFunction fName newEnv' funcs (SingleMatch var exp)
 
-evalFunction fName env (MultipleMatch var next) = do end <- isEOF
-                                                     if end then do putStr ""
-                                                     else do nums <- matchIntFromStdio
-                                                             let vars = matchVarsToVarnameList (MultipleMatch var next)
-                                                             let newEnv = matchUpdateEnv fName env vars nums
-                                                             newEnv' <- evalExp fName newEnv (getExpFromMultipleMatch next)
-                                                             evalFunction fName newEnv' (MultipleMatch var next)
+evalFunction fName env funcs (MultipleMatch var next) = do end <- isEOF
+                                                           if end then do putStr ""
+                                                           else do nums <- matchIntFromStdio
+                                                                   let vars = matchVarsToVarnameList (MultipleMatch var next)
+                                                                   let newEnv = matchUpdateEnv fName env vars nums
+                                                                   newEnv' <- evalExp fName newEnv funcs (getExpFromMultipleMatch next)
+                                                                   evalFunction fName newEnv' funcs (MultipleMatch var next)
 
 getExpFromMultipleMatch :: Match_ -> Exp_
 getExpFromMultipleMatch (SingleMatch _ exp) = exp
@@ -145,15 +145,17 @@ evalEquals fName env (Equals_ varName (ComparableExpSingle (ComparablesMaths mat
 
 evalEquals fName env (Equals_ varName comparable) = envUpdateOrAppend fName env (MBool varName (evalComparableExp fName env comparable))
 
-evalExp :: String -> E -> Exp_ -> IO E
-evalExp fName env (OutPatternExp p) = do outPatternPrint fName env p
-                                         return env
-evalExp fName env (EqualsExp exp) = return $! evalEquals fName env exp
-evalExp fName env (SequenceExp exp1 exp2) = do e <- evalExp fName env exp1
-                                               evalExp fName e exp2
-evalExp fName env (CondExp (Cond_ comp e e')) | (evalComparableExp fName env comp) = (evalExp fName env e)
-                                        | otherwise = evalExp fName env e'
-
+evalExp :: String -> E -> [FuncDeclaration_] -> Exp_ -> IO E
+evalExp fName env funcs (OutPatternExp p) = do outPatternPrint fName env p
+                                               return env
+evalExp fName env funcs (EqualsExp exp) = return $! evalEquals fName env exp
+evalExp fName env funcs (SequenceExp exp1 exp2) = do e <- evalExp fName env funcs exp1
+                                                     evalExp fName e funcs exp2
+evalExp fName env funcs (CondExp (Cond_ comp e e')) | (evalComparableExp fName env comp) = (evalExp fName env funcs e)
+                                                    | otherwise = evalExp fName env funcs e'
+evalExp fName env funcs (SegueToFunction nextFName nextVars nextMaths) = do let newEnv = matchUpdateEnv nextFName env nextVars (evalListMathsToListInts fName env nextMaths)
+                                                                            putStrLn $! show newEnv
+                                                                            evalExp nextFName newEnv funcs (getFunctionBody (findFunctionByName nextFName funcs))
 
 matchUpdateEnv :: String -> E -> [String] -> [Int] -> E
 matchUpdateEnv fName env [] _ = env
@@ -169,6 +171,11 @@ matchVarsToVarnameList (MultipleMatch (Var_ name _) next) = name : matchVarsToVa
 matchIntFromStdio :: IO [Int]
 matchIntFromStdio =  do line <- getLine
                         return $ (map read $ words line :: [Int])
+
+evalListMathsToListInts :: String -> E -> [Maths_] -> [Int]
+evalListMathsToListInts fName env [] = []
+evalListMathsToListInts fName env (x:xs) = (convert $ evalMaths fName env x):(evalListMathsToListInts fName env xs)
+            where convert (MathsInt v) = v
 
 evalMaths :: String -> E -> Maths_ -> Maths_
 evalMaths fName env (MathsInt int) = (MathsInt int)
@@ -261,20 +268,6 @@ evalComparableExp fName env (Or compExp1 compExp2 ) = evalComparableExp fName en
 evalComparableExp fName env (And (ComparableExpSingle (ComparablesMaths maths1)) (ComparableExpSingle (ComparablesMaths maths2))) = evalComparableExp fName env (And (ComparableExpSingle (ComparablesMaths (evalMaths fName env maths1))) (ComparableExpSingle (ComparablesMaths (evalMaths fName env maths2))))
 evalComparableExp fName env (And compExp1 compExp2 ) = evalComparableExp fName env (And (ComparableExpSingle (ComparablesBool (evalComparableExp fName env compExp1))) (ComparableExpSingle (ComparablesBool (evalComparableExp fName env compExp2))))
 
-
--- mapProgramToPureFunction :: [FuncDeclaration] -> FuncDeclaration
--- mapProgramToPureFunction ((MainFuncDeclaration (SingleSegue fName)):xs) = findFunctionByName fName xs
--- mapProgramToPureFunction ((MainFuncDeclaration (MultipleSegue fName next):x:xs)) = segueFuncDeclarationToNext 
-                                                                               
--- segueFuncDeclarationToNext :: FuncDeclaration -> FuncDeclaration -> FuncDeclaration
--- segueFuncDeclarationToNext (NormalFuncDeclaration fName init match) (NormalFuncDeclaration nextfName _ constMatch) 
---                 = NormalFuncDeclaration fName init (editWithSegue match nextfName (matchVarsToVarnameList constMatch) (getMathsFromOutPattern match))
-
--- editWithSegue :: Match_ -> String -> [String] -> [Maths_] -> Match_
--- editWithSegue (EmptyMatch ex) nextfName vars values = EmptyMatch (replaceOutWithSegue ex (SegueToFunction nextfName vars values))
--- editWithSegue (SingleMatch v ex) nextfName vars values = SingleMatch v (replaceOutWithSegue ex (SegueToFunction nextfName vars values))
--- editWithSegue (MultipleMatch (Var_ name _) next) = name : matchVarsToVarnameList next
-
 remapOutputToSegue :: [FuncDeclaration_] -> [FuncDeclaration_]
 remapOutputToSegue ((MainFuncDeclaration (SingleSegue fName)):xs) = ((MainFuncDeclaration (SingleSegue fName)):xs)
 remapOutputToSegue ((MainFuncDeclaration (MultipleSegue fName next):xs)) = (m) : (remapOutputToSegueRec (getFunctionNames (MultipleSegue fName next)) xs)-- queue main or not for evaluation?
@@ -309,7 +302,7 @@ getFunctionBody (NormalFuncDeclaration fName fInitArea (EmptyMatch exps)) = exps
 -- helper for the remapOutputToSegueRec
 replaceFunctionBody :: FuncDeclaration_ -> Exp_ -> FuncDeclaration_
 replaceFunctionBody (NormalFuncDeclaration fName fInitArea (SingleMatch var _)) newExp = (NormalFuncDeclaration fName fInitArea (SingleMatch var newExp))
-replaceFunctionBody (NormalFuncDeclaration fName fInitArea (MultipleMatch _ nextMatch)) newExp = replaceFunctionBody (NormalFuncDeclaration fName fInitArea nextMatch) newExp
+replaceFunctionBody (NormalFuncDeclaration fName fInitArea (MultipleMatch var nextMatch)) newExp = replaceFunctionBody (NormalFuncDeclaration fName fInitArea (MultipleMatch var nextMatch)) newExp
 replaceFunctionBody (NormalFuncDeclaration fName fInitArea (EmptyMatch _)) newExp = (NormalFuncDeclaration fName fInitArea (EmptyMatch newExp))
 
 getFunctionNames :: Main_ -> [String]
