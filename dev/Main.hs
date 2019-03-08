@@ -18,7 +18,7 @@ parseThis s = eval1_findMain $ parseCalc $ alexScanTokens s
 
 getProgram :: String
 getProgram = unsafePerformIO $ inner
-            where inner = do s <- readFile "test.txt"
+            where inner = do s <- readFile "test2"
                              return s
 
 data M = MInt String Int | MBool String Bool deriving (Show, Eq)
@@ -240,16 +240,22 @@ evalComparableExp env (And compExp1 compExp2 ) = evalComparableExp env (And (Com
 
 remapOutputToSegue :: [FuncDeclaration_] -> [FuncDeclaration_]
 remapOutputToSegue ((MainFuncDeclaration (SingleSegue fName)):xs) = ((MainFuncDeclaration (SingleSegue fName)):xs)
-mapProgramToPureFunction ((MainFuncDeclaration (MultipleSegue fName next):xs)) = (m) : (remapOutputToSegueRec (getFunctionNames (MultipleSegue fName next)) xs)-- queue main or not for evaluation?
+remapOutputToSegue ((MainFuncDeclaration (MultipleSegue fName next):xs)) = (m) : (remapOutputToSegueRec (getFunctionNames (MultipleSegue fName next)) xs)-- queue main or not for evaluation?
                                                                                     where m = (MainFuncDeclaration (MultipleSegue fName next))
 remapOutputToSegueRec :: [String] -> [FuncDeclaration_] -> [FuncDeclaration_]
 remapOutputToSegueRec [] _ = [] 
 remapOutputToSegueRec _ [] = []
 remapOutputToSegueRec [x] funcs = [remapMatchToEmptyMatch (findFunctionByName x funcs)]
-remapOutputToSegueRec (x:xx:xs) funcs = (replaceFunctionBody left_func left_newBody) : (remapOutputToSegueRec (xx:xs) funcs)
+remapOutputToSegueRec (x:xx:xs) funcs = (replaceFunctionBody left_func left_newBody) : (remapOutputToSegueRec (xx:xs) newFuncs)
                                         where left_func = findFunctionByName x funcs
-                                              (NormalFuncDeclaration _ _ match) = findFunctionByName xx funcs
+                                              (NormalFuncDeclaration rightFuncName rightInitArea match) = findFunctionByName xx funcs
                                               left_newBody = replaceOutWithSegue (getFunctionBody left_func) xx (matchVarsToVarnameList match)
+                                              newFuncs = substituteFunction funcs rightFuncName (remapMatchToEmptyMatch (NormalFuncDeclaration rightFuncName rightInitArea match))
+
+substituteFunction :: [FuncDeclaration_] -> String -> FuncDeclaration_ -> [FuncDeclaration_]
+substituteFunction [] _ _ = []
+substituteFunction ((NormalFuncDeclaration fName init match):xs) fName' fDec | fName == fName' = (fDec:xs)
+                                                                             | otherwise = (NormalFuncDeclaration fName init match):(substituteFunction xs fName' fDec)
 
 -- helper for the remapOutputToSegueRec
 remapMatchToEmptyMatch :: FuncDeclaration_ -> FuncDeclaration_

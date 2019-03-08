@@ -1,1 +1,6 @@
 Problem2: {} [a : Int] = [a, a, 30, var1, a]; Main: stdin >> Problem2 >> stdout
+
+
+
+(SingleMatch (Var_ "a" TInt) (SequenceExp (EqualsExp (Equals_ "x" (ComparableExpSingle (ComparablesMaths (MathsPlus (MathsPlus (MathsVar "var1") (MathsVar "var2")) (MathsVar "a")))))) (SequenceExp (OutPatternExp (SingleOutPattern (MathsPlus (MathsPlus (MathsVar "var1") (MathsVar "var2")) (MathsVar "a")))) (SequenceExp (EqualsExp (Equals_ "var1" (ComparableExpSingle (ComparablesMaths (MathsVar "var2"))))) (EqualsExp (Equals_ "var2" (ComparableExpSingle (ComparablesMaths (MathsVar "x")))))))))
+(SingleMatch (Var_ "a" TInt) (SequenceExp (EqualsExp (Equals_ "x" (ComparableExpSingle (ComparablesMaths (MathsPlus (MathsPlus (MathsVar "var1") (MathsVar "var2")) (MathsVar "a")))))) (SequenceExp (SegueToFunction "Mona" ["a","b"] [MathsVar "v",MathsInt 4])                                                  (SequenceExp (EqualsExp (Equals_ "var1" (ComparableExpSingle (ComparablesMaths (MathsVar "var2"))))) (EqualsExp (Equals_ "var2" (ComparableExpSingle (ComparablesMaths (MathsVar "x")))))))))
