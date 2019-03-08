@@ -18,4 +18,4 @@ x : Int = 0;
 	           var2 = x;
 
 Main:
-    stdin >> Problem5 >> Problem1 >> stdout
+    stdin >> Problem1 >> stdout
