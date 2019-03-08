@@ -22,78 +22,107 @@ getProgram = unsafePerformIO $ inner
                              return s
 
 data M = MInt String Int | MBool String Bool deriving (Show, Eq)
-type E = [M]
+type E = [(String,[M])]
 
-envInit :: FuncBodyInitArea_ -> E
-envInit EmptyInitArea = []
-envInit (SingleInitArea (VarIntInit_ (Var_ name _) value)) = [(MInt name value)]
-envInit (SingleInitArea (VarBoolInit_ (Var_ name _) value)) = [(MBool name value)]
-envInit (MultipleInitArea (VarIntInit_ (Var_ name _) value) next) = (MInt name value) : envInit next
-envInit (MultipleInitArea (VarBoolInit_ (Var_ name _) value) next) = (MBool name value) : envInit next
+getFunctionEnvironment :: String -> E -> [M]
+getFunctionEnvironment fName [] = []
+getFunctionEnvironment fName ((fName', vars):xs)) | fName' == fName = vars
+                                                  | otherwise = getFunctionEnvironment fName xs
 
-envContains :: E -> String -> Bool
-encContains [] _ = False
-envContains ((MInt name _) : xs) name' | name == name' = True
-                                       | otherwise = envContains xs name'
-envContains ((MBool name _) : xs) name' | name == name' = True
-                                        | otherwise = envContains xs name'
 
-envGetVar :: E -> String -> M
-envGetVar ((MInt name v) : xs) name' | name == name' = (MInt name v)
-                                     | otherwise = envGetVar xs name'
-envGetVar ((MBool name v) : xs) name' | name == name' = (MBool name v)
-                                      | otherwise = envGetVar xs name'
+envInit :: FuncBodyInitArea_ -> String -> E
+envInit initArea fName = [(fName,(envInitNoFunctionName initArea))]
 
-extractIntFromEnv :: E -> String -> Int
-extractIntFromEnv env varName = getValue $! envGetVar env varName
-            where getValue (MInt _ v) = v
+--helper for envInit
+envInitNoFunctionName :: FuncBodyInitArea_ -> [M]
+envInitNoFunctionName EmptyInitArea fName = [(fName,[])]
+envInitNoFunctionName (SingleInitArea (VarIntInit_ (Var_ name _) value)) = [(MInt name value)) ]
+envInitNoFunctionName (SingleInitArea (VarBoolInit_ (Var_ name _) value)) = [(MBool name value)]
+envInitNoFunctionName (MultipleInitArea (VarIntInit_ (Var_ name _) value) next) = (MInt name value) : envInit next 
+envInitNoFunctionName (MultipleInitArea (VarBoolInit_ (Var_ name _) value) next) = (MBool name value) : envInit next
 
-extractBoolFromEnv :: E -> String -> Bool
-extractBoolFromEnv env varName = getValue $! envGetVar env varName
+envContains :: String -> E -> String -> Bool
+envContains fName [] name = False 
+envContains fName env name = envContainsInner (getFunctionEnvironment fName env) name
+
+envContainsInner :: [M] -> String -> Bool
+envContainsInner [] _ = False
+envContainsInner ((MInt name _) : xs) name' | name == name' = True
+                                            | otherwise = envContainsInner xs name'
+envContainsInner ((MBool name _) : xs) name' | name == name' = True
+                                             | otherwise = envContainsInner xs name'
+
+envGetVar :: String -> E -> String -> M
+envGetVar fName [] name = [] 
+envGetVar fName env name = envGetVarInner (getFunctionEnvironment fName env) name
+
+
+envGetVarInner :: [M] -> String -> M
+envGetVarInner ((MInt name v) : xs) name' | name == name' = (MInt name v)
+                                          | otherwise = envGetVarInner xs name'
+envGetVarInner ((MBool name v) : xs) name' | name == name' = (MBool name v)
+                                           | otherwise = envGetVarInner xs name'
+
+extractIntFromEnv :: String -> E -> String -> Int
+extractIntFromEnv fName env varName = extractIntFromEnvInner (getFunctionEnvironment fName env) varName                                           
+
+extractIntFromEnvInner :: [M] -> String -> Int
+extractIntFromEnvInner env varName = getValue $! envGetVar env varName
+                                    where getValue (MInt _ v) = v
+
+extractBoolFromEnv :: String -> E -> String -> Bool
+extractBoolFromEnv fName env varName = extractBoolFromEnvInner (getFunctionEnvironment fName env) varName      
+
+extractBoolFromEnvInner :: [M] -> String -> Bool
+extractBoolFromEnvInner env varName = getValue $! envGetVar env varName
             where getValue (MBool _ v) = v
 
-envUpdateOrAppend :: E -> M -> E
-envUpdateOrAppend [] (MInt name' value') = [(MInt name' value')]
-envUpdateOrAppend ((MInt name value):xs) (MInt name' value') | name == name' = (MInt name value') : xs
-                                                             | otherwise = (MInt name value) : (envUpdateOrAppend xs (MInt name' value'))
+envUpdateOrAppend :: String -> E -> M -> [M]
+envUpdateOrAppend fName env var = envUpdateOrAppendInner (getFunctionEnvironment fName env) var
 
-envUpdateOrAppend [] (MBool name' value') = [(MBool name' value')]
-envUpdateOrAppend ((MBool name value):xs) (MBool name' value') | name == name' = (MBool name value') : xs
-                                                               | otherwise = (MBool name value) : (envUpdateOrAppend xs (MBool name' value'))
 
-envUpdateOrAppend (x:xs) m = x : envUpdateOrAppend xs m
+envUpdateOrAppendInner :: [M] -> M -> [M]
+envUpdateOrAppendInner [] (MInt name' value') = [(MInt name' value')]
+envUpdateOrAppendInner ((MInt name value):xs) (MInt name' value') | name == name' = (MInt name value') : xs
+                                                             | otherwise = (MInt name value) : (envUpdateOrAppendInner xs (MInt name' value'))
+
+envUpdateOrAppendInner [] (MBool name' value') = [(MBool name' value')]
+envUpdateOrAppendInner ((MBool name value):xs) (MBool name' value') | name == name' = (MBool name value') : xs
+                                                               | otherwise = (MBool name value) : (envUpdateOrAppendInner xs (MBool name' value'))
+
+envUpdateOrAppendInner (x:xs) m = x : envUpdateOrAppendInner xs m
 
 eval1_findMain :: [FuncDeclaration_] -> IO () -- FuncDeclaration_
-eval1_findMain (MainFuncDeclaration (SingleSegue funcname):ss) = evalFunction (envInit initArea) match
+eval1_findMain (MainFuncDeclaration (SingleSegue funcname):ss) = evalFunction fName (envInit initArea) match
                                                                  where (NormalFuncDeclaration fname initArea match) = findFunctionByName funcname ss
-eval1_findMain ((MainFuncDeclaration (MultipleSegue funcname next)):ss) = evalFunction (envInit initArea) match -- TODO!
+eval1_findMain ((MainFuncDeclaration (MultipleSegue funcname next)):ss) = evalFunction fName (envInit initArea) match -- TODO!
                                                                           where (NormalFuncDeclaration fname initArea match) = findFunctionByName funcname ss
 
 findFunctionByName :: String -> [FuncDeclaration_] -> FuncDeclaration_
 findFunctionByName funcName ((NormalFuncDeclaration funcName' a b):ff) | funcName == funcName' = (NormalFuncDeclaration funcName' a b)
                                                                        | otherwise = findFunctionByName funcName ff
 
-evalFunction :: E -> Match_ -> IO ()
-evalFunction env (EmptyMatch exp) = do end <- isEOF
-                                       if end then do putStr ""
-                                       else do _ <- matchIntFromStdio
-                                               newEnv' <- evalExp env exp
-                                               evalFunction newEnv' (EmptyMatch exp)
-evalFunction env (SingleMatch var exp) = do end <- isEOF
-                                            if end then do putStr ""
-                                            else do nums <- matchIntFromStdio
-                                                    let vars = matchVarsToVarnameList (SingleMatch var exp)
-                                                    let newEnv = matchUpdateEnv env vars nums
-                                                    newEnv' <- evalExp newEnv exp
-                                                    evalFunction newEnv' (SingleMatch var exp)
+evalFunction :: String -> E -> Match_ -> IO ()
+evalFunction fName env (EmptyMatch exp) = do end <- isEOF
+                                             if end then do putStr ""
+                                             else do _ <- matchIntFromStdio
+                                                     newEnv' <- evalExp env exp
+                                                     evalFunction fName newEnv' (EmptyMatch exp)
+evalFunction fName env (SingleMatch var exp) = do end <- isEOF
+                                                  if end then do putStr ""
+                                                  else do nums <- matchIntFromStdio
+                                                          let vars = matchVarsToVarnameList (SingleMatch var exp)
+                                                          let newEnv = matchUpdateEnv env vars nums
+                                                          newEnv' <- evalExp newEnv exp
+                                                          evalFunction fName newEnv' (SingleMatch var exp)
 
-evalFunction env (MultipleMatch var next) = do end <- isEOF
-                                               if end then do putStr ""
-                                               else do nums <- matchIntFromStdio
-                                                       let vars = matchVarsToVarnameList (MultipleMatch var next)
-                                                       let newEnv = matchUpdateEnv env vars nums
-                                                       newEnv' <- evalExp newEnv (getExpFromMultipleMatch next)
-                                                       evalFunction newEnv' (MultipleMatch var next)
+evalFunction fName env (MultipleMatch var next) = do end <- isEOF
+                                                     if end then do putStr ""
+                                                     else do nums <- matchIntFromStdio
+                                                             let vars = matchVarsToVarnameList (MultipleMatch var next)
+                                                             let newEnv = matchUpdateEnv env vars nums
+                                                             newEnv' <- evalExp newEnv (getExpFromMultipleMatch next)
+                                                             evalFunction fName newEnv' (MultipleMatch var next)
 
 getExpFromMultipleMatch :: Match_ -> Exp_
 getExpFromMultipleMatch (SingleMatch _ exp) = exp
