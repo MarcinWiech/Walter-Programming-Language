@@ -70,6 +70,8 @@ typeOfExp env fs fName (EqualsExp eqExp) = typeOfEqual env fName eqExp
 
 typeOfExp env fs fName (SequenceExp x y) = (typeOfExp (typeOfExp env fs fName x) fs fName y)
 
+typeOfExp env fs fName (OutPatternExp outPattern) = typeOfOutPattern env fName outPattern
+
 typeOfExp env fs fName (SegueToFunction _ _ _) = env -- TO BE CHANGED
 
 
@@ -131,6 +133,11 @@ typeOfEqual env fName (Equals_ varName compExp) | varType == compExpType = env
                                             where varType = getVarType (getFuncEnv env fName) varName
                                                   compExpType = typeOfComparableExp env fName compExp
 
-typeOfOutPattern :: TE -> String -> OutPattern_ -> T_
-typeOfOutPattern env fName ( )
+typeOfOutPattern :: TE -> String -> OutPattern_ -> TE
+typeOfOutPattern env fName (EmptyOutPatter) = env
+typeOfOutPattern env fName (SingleOutPattern maths) | (typeOfMaths env fName maths) == TInt = env
+                                                    | otherwise = error "TODO"
+typeOfOutPattern env fName (MultipleOutPattern maths next) | (typeOfMaths env fName maths) == TInt = typeOfOutPattern env fName next
+                                                           | otherwise = error "TODO"
+
                                             
