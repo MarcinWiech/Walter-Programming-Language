@@ -92,8 +92,8 @@ VarInit : Var '=' intValue { VarIntInit_ $1 $3}
 
 Match : '['']' '=' Exp         { EmptyMatch $4 }
       | '[' eof ']' '=' Exp    { EOFMatch $5 }
-      | '[' Var ']' '=' Exp    { SingleMatch $2 $5 }
-      | '[' Var ',' MatchRec   { MultipleMatch $2 $4 }
+      | '[' Var ':' intType ']' '=' Exp    { SingleMatch $2 $7 }
+      | '[' Var ':' intType ',' MatchRec   { MultipleMatch $2 $6 }
 
 MatchRec : Var ']' '=' Exp   { SingleMatch $1 $4 }
          | Var ',' MatchRec  { MultipleMatch $1 $3 }
@@ -141,7 +141,7 @@ parseError (t:ts) = error ("Parse error at line:column " ++ (tokenPosn t))
 
 data SuperExp = Func
 
-data T_ = TInt | TBool | TFunc T_ T_ deriving Show
+data T_ = TInt | TBool | TFunc T_ T_ deriving (Show, Eq)
 
 data Var_ = Var_ String T_ deriving Show
 
