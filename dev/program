@@ -4,3 +4,19 @@ Problem2: {} [a : Int] = [a, a, 30, var1, a]; Main: stdin >> Problem2 >> stdout
 
 (SingleMatch (Var_ "a" TInt) (SequenceExp (EqualsExp (Equals_ "x" (ComparableExpSingle (ComparablesMaths (MathsPlus (MathsPlus (MathsVar "var1") (MathsVar "var2")) (MathsVar "a")))))) (SequenceExp (OutPatternExp (SingleOutPattern (MathsPlus (MathsPlus (MathsVar "var1") (MathsVar "var2")) (MathsVar "a")))) (SequenceExp (EqualsExp (Equals_ "var1" (ComparableExpSingle (ComparablesMaths (MathsVar "var2"))))) (EqualsExp (Equals_ "var2" (ComparableExpSingle (ComparablesMaths (MathsVar "x")))))))))
 (SingleMatch (Var_ "a" TInt) (SequenceExp (EqualsExp (Equals_ "x" (ComparableExpSingle (ComparablesMaths (MathsPlus (MathsPlus (MathsVar "var1") (MathsVar "var2")) (MathsVar "a")))))) (SequenceExp (SegueToFunction "Mona" ["a","b"] [MathsVar "v",MathsInt 4])                                                  (SequenceExp (EqualsExp (Equals_ "var1" (ComparableExpSingle (ComparablesMaths (MathsVar "var2"))))) (EqualsExp (Equals_ "var2" (ComparableExpSingle (ComparablesMaths (MathsVar "x")))))))))
+
+*Main> envInit (tail funcs)
+[("Problem4",[]),("Problem3",[])]
+*Main> env = envInit (tail funcs)
+*Main> env = [("Problem4",[(MInt "c" 2),(MInt "d" 3)]),("Problem3",[])]
+*Main> envGetVar "Problem4" env "c"
+MInt "c" 2
+*Main> envGetVar "Problem4" env "d"
+MInt "d" 3
+*Main> evalListMathsToListInts "Problem4" env [MathsPlus (MathsVar "c") (MathsInt 1),MathsPlus (MathsVar "d") (MathsInt 1)]
+[3,4]
+*Main> matchUpdateEnv "Problem3" env ["a","b"] [3,4]
+[("Problem3",[MInt "a" 3,MInt "b" 4])]
+*Main> matchUpdateEnv "Problem3" env ["a","b"] []
+[("Problem4",[MInt "c" 2,MInt "d" 3]),("Problem3",[])]
+*Main> matchUpdateEnv "Problem3" env ["a","b"] []

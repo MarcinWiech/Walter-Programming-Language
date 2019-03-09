@@ -154,7 +154,6 @@ evalExp fName env funcs (SequenceExp exp1 exp2) = do e <- evalExp fName env func
 evalExp fName env funcs (CondExp (Cond_ comp e e')) | (evalComparableExp fName env comp) = (evalExp fName env funcs e)
                                                     | otherwise = evalExp fName env funcs e'
 evalExp fName env funcs (SegueToFunction nextFName nextVars nextMaths) = do let newEnv = matchUpdateEnv nextFName env nextVars (evalListMathsToListInts fName env nextMaths)
-                                                                            putStrLn $! show newEnv
                                                                             evalExp nextFName newEnv funcs (getFunctionBody (findFunctionByName nextFName funcs))
 
 matchUpdateEnv :: String -> E -> [String] -> [Int] -> E
@@ -171,6 +170,7 @@ matchVarsToVarnameList (MultipleMatch (Var_ name _) next) = name : matchVarsToVa
 matchIntFromStdio :: IO [Int]
 matchIntFromStdio =  do line <- getLine
                         return $ (map read $ words line :: [Int])
+-- matchIntFromStdio = return [1,2]
 
 evalListMathsToListInts :: String -> E -> [Maths_] -> [Int]
 evalListMathsToListInts fName env [] = []
@@ -301,9 +301,15 @@ getFunctionBody (NormalFuncDeclaration fName fInitArea (EmptyMatch exps)) = exps
 
 -- helper for the remapOutputToSegueRec
 replaceFunctionBody :: FuncDeclaration_ -> Exp_ -> FuncDeclaration_
-replaceFunctionBody (NormalFuncDeclaration fName fInitArea (SingleMatch var _)) newExp = (NormalFuncDeclaration fName fInitArea (SingleMatch var newExp))
-replaceFunctionBody (NormalFuncDeclaration fName fInitArea (MultipleMatch var nextMatch)) newExp = replaceFunctionBody (NormalFuncDeclaration fName fInitArea (MultipleMatch var nextMatch)) newExp
-replaceFunctionBody (NormalFuncDeclaration fName fInitArea (EmptyMatch _)) newExp = (NormalFuncDeclaration fName fInitArea (EmptyMatch newExp))
+-- replaceFunctionBody (NormalFuncDeclaration fName fInitArea (SingleMatch var _)) newExp = (NormalFuncDeclaration fName fInitArea (SingleMatch var newExp))
+-- replaceFunctionBody (NormalFuncDeclaration fName fInitArea (MultipleMatch var nextMatch)) newExp = 
+-- replaceFunctionBody (NormalFuncDeclaration fName fInitArea (EmptyMatch _)) newExp = (NormalFuncDeclaration fName fInitArea (EmptyMatch newExp))
+replaceFunctionBody (NormalFuncDeclaration fName fInitArea match) newExp = (NormalFuncDeclaration fName fInitArea (replaceFunctionBodyInner match newExp))
+
+replaceFunctionBodyInner :: Match_ -> Exp_ -> Match_
+replaceFunctionBodyInner (SingleMatch var _) newExp = SingleMatch var newExp
+replaceFunctionBodyInner (EmptyMatch _) newExp = EmptyMatch newExp
+replaceFunctionBodyInner (MultipleMatch var next) newExp = MultipleMatch var (replaceFunctionBodyInner next newExp)
 
 getFunctionNames :: Main_ -> [String]
 getFunctionNames (SingleSegue fName) = [fName]
