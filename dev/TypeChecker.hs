@@ -40,17 +40,22 @@ getFuncEnv ((fName, fEnv):xs) fName' | fName == fName' = (fName, fEnv)
 -----------------------------------------------------------------------------------------------------------
 
 executeTypeCheck :: [FuncDeclaration_] -> IO ()
-executeTypeCheck ((MainFuncDeclaration (SingleSegue fName)):xs) = do let _ = typeOf [] xs (findFunctionByNameRemap fName xs)
-                                                                     putStrLn "TODO OK"
-executeTypeCheck ((MainFuncDeclaration (MultipleSegue fName _)):xs) = do let _ = typeOf [] xs (findFunctionByNameRemap fName xs)
-                                                                         putStrLn "TODO OK"
+executeTypeCheck ((MainFuncDeclaration (SingleSegue fName)):xs) = do let x = typeOf [] xs (findFunctionByNameRemap fName xs)
+                                                                     putStrLn $ show x
+executeTypeCheck ((MainFuncDeclaration (MultipleSegue fName next)):xs) = do let x = typeOf [] xs (findFunctionByNameRemap fName xs)
+                                                                            putStrLn $ show x
 executeTypeCheck _ = error "TODO NO VALID STRUCTURE?"
 
 typeOf :: TE -> [FuncDeclaration_] -> FuncDeclaration_ -> TE
 typeOf _ _ (MainFuncDeclaration _ ) = error "TODO"
-typeOf env fs (NormalFuncDeclaration fName fInitArea fMatch) | not $ containsFunc fName env = typeOfMatch newEnv fs fName fMatch                                                                                               
-                                                             | otherwise = error "TODO"
-                                                             where newEnv = typeOfInit env fs fName fInitArea
+typeOf env fs (NormalFuncDeclaration fName fInitArea fMatch) = newEnv''
+                                                             where newEnv | not $ containsFunc fName env = typeOfInit env fs fName fInitArea
+                                                                          | otherwise = env
+
+                                                                   newEnv' = typeOfMatch newEnv fs fName fMatch
+
+                                                                   thisFuncBody = getFunctionBody (NormalFuncDeclaration fName fInitArea fMatch)
+                                                                   newEnv'' = typeOfExp newEnv' fs fName thisFuncBody
 
 typeOfInit :: TE -> [FuncDeclaration_] -> String -> FuncBodyInitArea_ -> TE
 typeOfInit env fs fName EmptyInitArea = (fName, []) : env
@@ -77,12 +82,11 @@ typeOfExp env fs fName (SequenceExp x y) = (typeOfExp (typeOfExp env fs fName x)
 
 typeOfExp env fs fName (OutPatternExp outPattern) = typeOfOutPattern env fName outPattern
 
-typeOfExp env fs fName (SegueToFunction fName' varNames maths) = newEnv'
+typeOfExp env fs fName (SegueToFunction fName' varNames maths) | length varNames == length maths = newEnv'
+                                                               | otherwise = error "TODO 81"
                         where nextFunc = findFunctionByNameRemap fName' fs
                               newEnv = updateCheckEnvSegue env fs fName' varNames maths
                               newEnv' = typeOf newEnv fs nextFunc
-                           -- newEnv' = typeOfExp newEnv fs fName' (getFunctionBody nextFunc)
-
 --helper for typeOfExp
 updateCheckEnvSegue :: TE -> [FuncDeclaration_] -> String -> [String] -> [Maths_] -> TE
 updateCheckEnvSegue env _ _ [] [] = env

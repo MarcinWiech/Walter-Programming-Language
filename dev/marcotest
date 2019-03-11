@@ -1,25 +1,10 @@
-Problem1:
-{
-    var1 : Int = 0;
-}
-[a : Int, b : Int] = var1 = b*3;
-                     [-a-(-2), -b*3];
+DuplicateOneRow:
+{ var1 : Int = 0; }
+[a : Int] = [a, -a];
 
-Problem5: 
-{
-var1 : Int = 0;
-var2 : Int = 0;
-x : Int = 0;
-}
-[a : Int] = x = var1 + var2 + a;
-            [var1 + var2 + a, a];
-            var1 = var2;
-	        var2 = x;
-
-Problem4:
+Times:
 {}
-[c : Int, d : Int] = [c+1, d+1]
-
+[c : Int, d : Int] = [c*10, d*10]
 
 Main:
-    stdin >> Problem5 >> Problem4 >> stdout
+    stdin >> DuplicateOneRow >> Times >> stdout

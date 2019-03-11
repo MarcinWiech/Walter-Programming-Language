@@ -9,22 +9,24 @@ import System.IO
 import System.IO.Unsafe (unsafePerformIO)
 import System.IO (isEOF)
 
-
--- will read file lazyly, save as states
-
-
 main :: IO ()
 main = parseThisFile    
 
 
 parseThisFile :: IO ()
-parseThisFile = parseThis getProgram
-parseThis s = eval1_findMain $ remapOutputToSegue $ parseCalc $ alexScanTokens s
+parseThisFile = do p <- getProgram
+                   let t = remapOutputToSegue $ parseCalc $ alexScanTokens p
+                   executeTypeCheck t
+                   eval1_findMain t
+                   putStrLn "END"
 
-getProgram :: String
-getProgram = unsafePerformIO $ inner
-            where inner = do s <- readFile "marcotest"
-                             return s
+
+-- parseThisFile = parseThis getProgram
+-- parseThis s = eval1_findMain $ executeTypeCheck $ remapOutputToSegue $ parseCalc $ alexScanTokens s
+
+getProgram :: IO String
+getProgram = do s <- readFile "marcotest"
+                return s
 
 data M = MInt String Int | MBool String Bool deriving (Show, Eq)
 type E = [(String,[M])]
@@ -33,10 +35,6 @@ getFunctionEnvironment :: String -> E -> [M]
 getFunctionEnvironment fName [] = []
 getFunctionEnvironment fName ((fName', vars):xs) | fName' == fName = vars
                                                  | otherwise = getFunctionEnvironment fName xs
-
-
--- envInit :: FuncBodyInitArea_ -> String -> E
--- envInit initArea fName = [(fName,(envInitNoFunctionName initArea))]
 
 envInit :: [FuncDeclaration_] -> E
 envInit [] = []
