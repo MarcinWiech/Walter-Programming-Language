@@ -20,7 +20,7 @@ queueCheckInFuncEnv ((fName, fEnv):xs) fName' (var, t) | fName == fName' =  (fNa
 queueInFuncEnv :: [(String, T_)] -> (String, T_) -> [(String, T_)]
 queueInFuncEnv [] (newVarName, newVarType) = [(newVarName, newVarType)]
 queueInFuncEnv ((varName, varType):xs) (newVarName, newVarType) | varName == newVarName = error "TODO"
-                                                                    | otherwise = (varName, varType) : queueInFuncEnv xs (newVarName, newVarType)
+                                                                | otherwise = (varName, varType) : queueInFuncEnv xs (newVarName, newVarType)
 
 varInitToM :: VarInit_ -> (String, T_)
 varInitToM (VarIntInit_ (Var_ varName varType) _) = (varName, varType)
@@ -72,8 +72,28 @@ typeOfExp env fs fName (SequenceExp x y) = (typeOfExp (typeOfExp env fs fName x)
 
 typeOfExp env fs fName (OutPatternExp outPattern) = typeOfOutPattern env fName outPattern
 
-typeOfExp env fs fName (SegueToFunction _ _ _) = env -- TO BE CHANGED
+typeOfExp env fs fName (SegueToFunction fName' varNames maths) | checkLengths && (checkMaths maths == TInt) = newEnv
+                                                          | otherwise = error "TODO"
+                        where checkMaths [] = TInt
+                              checkMaths (x:xs) | typeOfMaths env fName x == TInt = checkMaths xs
+                                                | otherwise = error "TODO"
+                              checkLengths = length varNames == length maths
+                              (NormalFuncDeclaration _ newInit matchNextExp) = findFunctionByNameRemap fName' fs
+                              envInitVars = typeOfMatch env fs fName' newInit
+                              newEnv = typeOfExp env fs fName' (getFunctionBody(findFunctionByNameRemap fName' fs))
+-- init all vars at the beginning
+-- typeOfSegue :: TE -> Exp_ -> TE
+-- typeOfSegue env (SegueToFunction fName varNames maths) = 
 
+      --helper for typeOfExp
+updateCheckEnvSegue :: TE -> [FuncDeclaration_] -> String -> [String] -> [Maths_] -> TE
+updateCheckEnvSegue env fs fName [] _ = env
+updateCheckEnvSegue env fs fName _ [] = env
+updateCheckEnvSegue env fs fName (v:vs) (m:ms) | contains && (vT == mT) = updateCheckEnvSegue env fs fName vs ms
+                                               | otherwise = queueCheckInFuncEnv env fName (v,TInt)
+                        where contains = containsFunc fName env
+                              vT = getVarType (getFuncEnv env fName) v 
+                              mT = typeOfMaths env fName m
 
 typeOfMaths :: TE-> String -> Maths_ -> T_
 typeOfMaths _ _ (MathsInt _) = TInt
@@ -134,10 +154,10 @@ typeOfEqual env fName (Equals_ varName compExp) | varType == compExpType = env
                                                   compExpType = typeOfComparableExp env fName compExp
 
 typeOfOutPattern :: TE -> String -> OutPattern_ -> TE
-typeOfOutPattern env fName (EmptyOutPatter) = env
-typeOfOutPattern env fName (SingleOutPattern maths) | (typeOfMaths env fName maths) == TInt = env
+typeOfOutPattern env _ EmptyOutPatter = env
+typeOfOutPattern env fName (SingleOutPattern maths) | typeOfMaths env fName maths == TInt = env
                                                     | otherwise = error "TODO"
-typeOfOutPattern env fName (MultipleOutPattern maths next) | (typeOfMaths env fName maths) == TInt = typeOfOutPattern env fName next
+typeOfOutPattern env fName (MultipleOutPattern maths next) | typeOfMaths env fName maths == TInt = typeOfOutPattern env fName next
                                                            | otherwise = error "TODO"
 
                                             
