@@ -31,8 +31,7 @@ $white+       ;
   \}            { tok (\p s -> TokenRCurlyBracket p) }
   \,            { tok (\p s -> TokenComma p) }
   ">>"          { tok (\p s -> TokenPipe p) }
-  Int           { tok (\p s -> TokenTypeInt p) }  
-  EOF           { tok (\p s -> TokenEOF p) }
+  Int           { tok (\p s -> TokenTypeInt p) }
   Bool          { tok (\p s -> TokenTypeBool p) }
   \;            { tok (\p s -> TokenSemiColon p) }
   if            { tok (\p s -> TokenIf p) }
@@ -82,7 +81,6 @@ data Token =
   TokenPipe AlexPosn            |
   TokenTypeInt AlexPosn         |
   TokenTypeBool AlexPosn        |
-  TokenEOF AlexPosn             |
   TokenIf AlexPosn              |
   TokenElse  AlexPosn           |
   TokenMain AlexPosn            |
@@ -123,7 +121,6 @@ tokenPosn (TokenComma (AlexPn a l c)) = show(l) ++ ":" ++ show(c)
 tokenPosn (TokenPipe (AlexPn a l c)) = show(l) ++ ":" ++ show(c)
 tokenPosn (TokenTypeInt (AlexPn a l c)) = show(l) ++ ":" ++ show(c)
 tokenPosn (TokenTypeBool (AlexPn a l c)) = show(l) ++ ":" ++ show(c)
-tokenPosn (TokenEOF (AlexPn a l c)) = show(l) ++ ":" ++ show(c)
 tokenPosn (TokenIf  (AlexPn a l c)) = show(l) ++ ":" ++ show(c)
 tokenPosn (TokenElse  (AlexPn a l c)) = show(l) ++ ":" ++ show(c)
 tokenPosn (TokenMain (AlexPn a l c)) = show(l) ++ ":" ++ show(c)

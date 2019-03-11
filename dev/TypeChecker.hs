@@ -9,13 +9,12 @@ type TE = [TM]
 containsFunc :: String -> TE -> Bool
 containsFunc fName [] = False
 containsFunc fName ((fName', _):xs) | fName == fName' = True
-                                        | otherwise = containsFunc fName xs
+                                    | otherwise = containsFunc fName xs
 
 queueCheckInFuncEnv :: TE -> String -> (String, T_) -> TE
-queueCheckInFuncEnv [] _ _ = error "TODO"
+queueCheckInFuncEnv [] fName (var, t) = [(fName, [(var, t)])]
 queueCheckInFuncEnv ((fName, fEnv):xs) fName' (var, t) | fName == fName' =  (fName, (queueInFuncEnv  fEnv (var, t))) : xs
                                                        | otherwise = (fName, fEnv) : queueCheckInFuncEnv xs fName' (var, t)
-
 
 queueInFuncEnv :: [(String, T_)] -> (String, T_) -> [(String, T_)]
 queueInFuncEnv [] (newVarName, newVarType) = [(newVarName, newVarType)]
@@ -40,13 +39,19 @@ getFuncEnv ((fName, fEnv):xs) fName' | fName == fName' = (fName, fEnv)
 
 -----------------------------------------------------------------------------------------------------------
 
+executeTypeCheck :: [FuncDeclaration_] -> IO ()
+executeTypeCheck ((MainFuncDeclaration (SingleSegue fName)):xs) = do let _ = typeOf [] xs (findFunctionByNameRemap fName xs)
+                                                                     putStrLn "TODO OK"
+executeTypeCheck ((MainFuncDeclaration (MultipleSegue fName _)):xs) = do let _ = typeOf [] xs (findFunctionByNameRemap fName xs)
+                                                                         putStrLn "TODO OK"
+executeTypeCheck _ = error "TODO NO VALID STRUCTURE?"
 
 typeOf :: TE -> [FuncDeclaration_] -> FuncDeclaration_ -> TE
 typeOf _ _ (MainFuncDeclaration _ ) = error "TODO"
 typeOf env fs (NormalFuncDeclaration fName fInitArea fMatch) | not $ containsFunc fName env = typeOfMatch newEnv fs fName fMatch                                                                                               
                                                              | otherwise = error "TODO"
                                                              where newEnv = typeOfInit env fs fName fInitArea
-    
+
 typeOfInit :: TE -> [FuncDeclaration_] -> String -> FuncBodyInitArea_ -> TE
 typeOfInit env fs fName EmptyInitArea = (fName, []) : env
 typeOfInit env fs fName (SingleInitArea varInit) = queueCheckInFuncEnv env fName (varInitToM varInit)
@@ -72,28 +77,23 @@ typeOfExp env fs fName (SequenceExp x y) = (typeOfExp (typeOfExp env fs fName x)
 
 typeOfExp env fs fName (OutPatternExp outPattern) = typeOfOutPattern env fName outPattern
 
-typeOfExp env fs fName (SegueToFunction fName' varNames maths) | checkLengths && (checkMaths maths == TInt) = newEnv
-                                                          | otherwise = error "TODO"
-                        where checkMaths [] = TInt
-                              checkMaths (x:xs) | typeOfMaths env fName x == TInt = checkMaths xs
-                                                | otherwise = error "TODO"
-                              checkLengths = length varNames == length maths
-                              (NormalFuncDeclaration _ newInit matchNextExp) = findFunctionByNameRemap fName' fs
-                              envInitVars = typeOfMatch env fs fName' newInit
-                              newEnv = typeOfExp env fs fName' (getFunctionBody(findFunctionByNameRemap fName' fs))
--- init all vars at the beginning
--- typeOfSegue :: TE -> Exp_ -> TE
--- typeOfSegue env (SegueToFunction fName varNames maths) = 
+typeOfExp env fs fName (SegueToFunction fName' varNames maths) = newEnv'
+                        where nextFunc = findFunctionByNameRemap fName' fs
+                              newEnv = updateCheckEnvSegue env fs fName' varNames maths
+                              newEnv' = typeOf newEnv fs nextFunc
+                           -- newEnv' = typeOfExp newEnv fs fName' (getFunctionBody nextFunc)
 
-      --helper for typeOfExp
+--helper for typeOfExp
 updateCheckEnvSegue :: TE -> [FuncDeclaration_] -> String -> [String] -> [Maths_] -> TE
-updateCheckEnvSegue env fs fName [] _ = env
-updateCheckEnvSegue env fs fName _ [] = env
+updateCheckEnvSegue env _ _ [] [] = env
+
 updateCheckEnvSegue env fs fName (v:vs) (m:ms) | contains && (vT == mT) = updateCheckEnvSegue env fs fName vs ms
                                                | otherwise = queueCheckInFuncEnv env fName (v,TInt)
                         where contains = containsFunc fName env
                               vT = getVarType (getFuncEnv env fName) v 
                               mT = typeOfMaths env fName m
+
+updateCheckEnvSegue _ _ _ _ _ = error "TODO"
 
 typeOfMaths :: TE-> String -> Maths_ -> T_
 typeOfMaths _ _ (MathsInt _) = TInt

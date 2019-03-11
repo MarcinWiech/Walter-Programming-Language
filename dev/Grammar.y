@@ -29,7 +29,6 @@ import Tokens
     ','        { TokenComma _ }
     '>>'       { TokenPipe _ }
     intType    { TokenTypeInt _ }
-    eof        { TokenEOF _ } -- in reality EOF
     boolType   { TokenTypeBool _ }
     ';'        { TokenSemiColon _ }
     if         { TokenIf _ }
@@ -90,13 +89,12 @@ Var : var ':' T { Var_ $1 $3 }
 VarInit : Var '=' intValue { VarIntInit_ $1 $3}
         | Var '=' B        { VarBoolInit_ $1 $3}
 
-Match : '['']' '=' Exp         { EmptyMatch $4 }
-      | '[' eof ']' '=' Exp    { EOFMatch $5 }
-      | '[' Var ':' intType ']' '=' Exp    { SingleMatch $2 $7 }
-      | '[' Var ':' intType ',' MatchRec   { MultipleMatch $2 $6 }
+Match : '['']' '=' Exp                      { EmptyMatch $4 }
+      | '[' var ':' intType ']' '=' Exp     { SingleMatch (Var_ $2 TInt) $7 }
+      | '[' var ':' intType ',' MatchRec    { MultipleMatch (Var_ $2 TInt) $6 }
 
-MatchRec : Var ']' '=' Exp   { SingleMatch $1 $4 }
-         | Var ',' MatchRec  { MultipleMatch $1 $3 }
+MatchRec : var ':' intType ']' '=' Exp      { SingleMatch (Var_ $1 TInt) $6 }
+         | var ':' intType ',' MatchRec     { MultipleMatch (Var_ $1 TInt) $5 }
 
 OutPattern : '['']'                         { EmptyOutPatter }
            | '[' Maths ',' OutPatternRec    { MultipleOutPattern $2 $4 }
@@ -141,7 +139,7 @@ parseError (t:ts) = error ("Parse error at line:column " ++ (tokenPosn t))
 
 data SuperExp = Func
 
-data T_ = TInt | TBool | TFunc Int deriving (Show, Eq)
+data T_ = TInt | TBool deriving (Show, Eq)
 
 data Var_ = Var_ String T_ deriving Show
 
@@ -150,7 +148,6 @@ data VarInit_ = VarIntInit_ Var_ Int
               deriving Show
 
 data Match_ = EmptyMatch Exp_
-            | EOFMatch Exp_
             | MultipleMatch Var_ Match_
             | SingleMatch Var_ Exp_
             deriving Show

@@ -23,7 +23,7 @@ parseThis s = eval1_findMain $ remapOutputToSegue $ parseCalc $ alexScanTokens s
 
 getProgram :: String
 getProgram = unsafePerformIO $ inner
-            where inner = do s <- readFile "test2"
+            where inner = do s <- readFile "marcotest"
                              return s
 
 data M = MInt String Int | MBool String Bool deriving (Show, Eq)

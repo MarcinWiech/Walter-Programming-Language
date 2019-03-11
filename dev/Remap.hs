@@ -63,7 +63,6 @@ findFunctionByNameRemap funcName ((NormalFuncDeclaration funcName' a b):ff) | fu
                                                                        | otherwise = findFunctionByNameRemap funcName ff
 matchVarsToVarnameList :: Match_ -> [String]
 matchVarsToVarnameList (EmptyMatch _) = []
-matchVarsToVarnameList (EOFMatch _) = [] -- ?????????
 matchVarsToVarnameList (SingleMatch (Var_ name _) _) = [name]
 matchVarsToVarnameList (MultipleMatch (Var_ name _) next) = name : matchVarsToVarnameList next
 
