@@ -226,7 +226,15 @@ evalComparableExp fName env (Not exp) = not (evalComparableExp fName env exp)
 evalComparableExp fName env (ComparableExpSingle (ComparablesMaths (MathsVar s))) = extractBoolFromEnv fName env s
 
 evalComparableExp fName env (EqualsTo  (ComparableExpSingle (ComparablesMaths (MathsInt a))) (ComparableExpSingle (ComparablesMaths (MathsInt b))) ) = a == b
-evalComparableExp fName env (EqualsTo (ComparableExpSingle (ComparablesMaths (MathsVar a))) (ComparableExpSingle (ComparablesMaths (MathsVar b))) ) = (extractIntFromEnv fName env a) == (extractIntFromEnv fName env b)
+evalComparableExp fName env (EqualsTo (ComparableExpSingle (ComparablesMaths (MathsVar a))) (ComparableExpSingle (ComparablesMaths (MathsVar b))) ) | isIntTop = (extractIntFromEnv fName env a) == (extractIntFromEnv fName env b)
+                                                                                                                                                    | otherwise = (extractBoolFromEnv fName env a) == (extractBoolFromEnv fName env b)
+                                                                                                                                                    where getVarT_ :: M -> T_
+                                                                                                                                                          getVarT_ (MInt _ _) = TInt
+                                                                                                                                                          getVarT_ (MBool _ _) = TBool
+
+                                                                                                                                                          aType = getVarT_ (envGetVar fName env a)
+                                                                                                                                                          bType = getVarT_ (envGetVar fName env b)
+                                                                                                                                                          isIntTop = aType == bType  && aType == TInt
 evalComparableExp fName env (EqualsTo  (ComparableExpSingle (ComparablesBool  a)) (ComparableExpSingle (ComparablesBool b)) ) = a == b
 
 evalComparableExp fName env (Or  (ComparableExpSingle (ComparablesBool  a)) (ComparableExpSingle (ComparablesBool b)) ) = a || b

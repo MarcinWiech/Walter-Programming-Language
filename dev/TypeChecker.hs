@@ -24,17 +24,19 @@ queueInFuncEnv ((varName, varType):xs) (newVarName, newVarType) | varName == new
 
 
 varInitToM :: VarInit_ -> (String, T_)
-varInitToM (VarIntInit_ (Var_ varName varType) _) = (varName, varType)
-varInitToM (VarBoolInit_ (Var_ varName varType) _) = (varName, varType)
+varInitToM (VarIntInit_ (Var_ varName varType) varType') | varType == TInt = (varName, varType)
+                                                         | otherwise = error (varName ++ " could not be assigned to " ++ show varType')
+varInitToM (VarBoolInit_ (Var_ varName varType) varType') | varType == TBool = (varName, varType)
+                                                         | otherwise = error (varName ++ " could not be assigned to " ++ show varType')
 
 varToM :: Var_ -> (String, T_)
 varToM (Var_ varName varType) = (varName, varType)
 
 getVarType :: TM -> String -> T_
 getVarType (fName, []) varName = error ("TODO" ++ fName ++ varName)
-getVarType ((fName, ((varName, varType):xs))) varName' | varName == varName' = varType
-                                                       | otherwise = getVarType (fName, xs) varName'
-
+getVarType (fName, ((varName, varType):xs)) varName' | varName == varName' = varType
+                                                     | otherwise = getVarType (fName, xs) varName'
+                                                       
 getFuncEnv :: TE -> String -> TM
 getFuncEnv [] _ = error "TODO"
 getFuncEnv ((fName, fEnv):xs) fName' | fName == fName' = (fName, fEnv)
@@ -170,11 +172,10 @@ typeOfComparableExp env fName (GreaterThan x y) = typeOfComparableExp env fName 
 typeOfComparableExp env fName (SmallerOrEqual x y) = typeOfComparableExp env fName (GreaterOrEqual x y)
 typeOfComparableExp env fName (SmallerThan x y) = typeOfComparableExp env fName (SmallerOrEqual x y)
 
-typeOfComparableExp env fName (EqualsTo x y) | xType == yType = yType
-                                             | otherwise = error "TODO"
+typeOfComparableExp env fName (EqualsTo x y) | xType == yType = TBool
+                                             | otherwise = error ("TODO" ++ show x ++ " -> " ++ show y)
                                              where xType = typeOfComparableExp env fName x
                                                    yType = typeOfComparableExp env fName y
-
 
 typeOfEqual :: TE -> String -> Equals_ -> TE
 typeOfEqual env fName (Equals_ varName compExp) | varType == compExpType = env
