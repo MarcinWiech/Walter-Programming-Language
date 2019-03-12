@@ -142,9 +142,7 @@ typeOfMaths env fName (MathsNegative x) | xType == TInt = TInt
                                              where xType = typeOfMaths env fName x
 
 typeOfComparables :: TE -> String -> Comparables_ -> T_
-typeOfComparables _ _ (ComparablesInt _) = TInt
 typeOfComparables _ _ (ComparablesBool _) = TBool
-typeOfComparables env fName (ComparablesVar varName) = getVarType (getFuncEnv env fName) varName
 typeOfComparables env fName (ComparablesMaths maths) = typeOfMaths env fName maths
 
 typeOfComparableExp :: TE -> String -> ComparableExp_ -> T_ 

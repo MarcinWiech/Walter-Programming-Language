@@ -177,9 +177,7 @@ data OutPattern_ = EmptyOutPatter
 data Equals_ = Equals_ String ComparableExp_
              deriving Show
 
-data Comparables_ = ComparablesVar String
-                  | ComparablesMaths Maths_
-                  | ComparablesInt Int
+data Comparables_ = ComparablesMaths Maths_
                   | ComparablesBool Bool --Functions to be added!
                   deriving Show
 

@@ -266,3 +266,9 @@ evalComparableExp fName env (Or compExp1 compExp2 ) = evalComparableExp fName en
 
 evalComparableExp fName env (And (ComparableExpSingle (ComparablesMaths maths1)) (ComparableExpSingle (ComparablesMaths maths2))) = evalComparableExp fName env (And (ComparableExpSingle (ComparablesMaths (evalMaths fName env maths1))) (ComparableExpSingle (ComparablesMaths (evalMaths fName env maths2))))
 evalComparableExp fName env (And compExp1 compExp2 ) = evalComparableExp fName env (And (ComparableExpSingle (ComparablesBool (evalComparableExp fName env compExp1))) (ComparableExpSingle (ComparablesBool (evalComparableExp fName env compExp2))))
+
+evalComparableExp fName env (EqualsTo compExp1 compExp2 ) = evalComparableExp fName env (EqualsTo (ComparableExpSingle (ComparablesBool (evalComparableExp fName env compExp1))) (ComparableExpSingle (ComparablesBool (evalComparableExp fName env compExp2))))
+evalComparableExp fName env (GreaterThan compExp1 compExp2 ) = evalComparableExp fName env (GreaterThan (ComparableExpSingle (ComparablesBool (evalComparableExp fName env compExp1))) (ComparableExpSingle (ComparablesBool (evalComparableExp fName env compExp2))))
+evalComparableExp fName env (SmallerThan compExp1 compExp2 ) = evalComparableExp fName env (SmallerThan (ComparableExpSingle (ComparablesBool (evalComparableExp fName env compExp1))) (ComparableExpSingle (ComparablesBool (evalComparableExp fName env compExp2))))
+evalComparableExp fName env (GreaterOrEqual compExp1 compExp2 ) = evalComparableExp fName env (GreaterOrEqual (ComparableExpSingle (ComparablesBool (evalComparableExp fName env compExp1))) (ComparableExpSingle (ComparablesBool (evalComparableExp fName env compExp2))))
+evalComparableExp fName env (SmallerOrEqual compExp1 compExp2 ) = evalComparableExp fName env (SmallerOrEqual (ComparableExpSingle (ComparablesBool (evalComparableExp fName env compExp1))) (ComparableExpSingle (ComparablesBool (evalComparableExp fName env compExp2))))
