@@ -2,15 +2,15 @@ DuplicateOneRow:
 { var1 : Int = 0; var3 : Bool = true; var4 : Bool = true;}
 [a : Int] = [0, 0];
 
-if (a % 2 == 0 == var3) {
+if (true) {
     var3 = !var3;
     if(2 == 2){
-    [1, 1];
+    [1, var3];
     }
 } else {
-    [a, a];
+    [0, 0];                  
     var3 = !var3;
-    [2, 2]
+   
 }
 
 

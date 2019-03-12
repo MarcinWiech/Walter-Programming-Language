@@ -62,12 +62,12 @@ initEnv env (NormalFuncDeclaration fName initArea _:xs) | not envContains = init
       where envContains = containsFunc fName env
             newEnv = typeOfInit env fName initArea
 
-executeTypeCheck :: [FuncDeclaration_] -> IO ()
+executeTypeCheck :: [FuncDeclaration_] -> IO TE
 executeTypeCheck ((MainFuncDeclaration (SingleSegue fName)):xs) = do let x = typeOf initialisedEnv xs (findFunctionByNameRemap fName xs)
-                                                                     putStr ""
+                                                                     return $! x
                                     where initialisedEnv = initEnv [] (MainFuncDeclaration (SingleSegue fName):xs)
 executeTypeCheck ((MainFuncDeclaration (MultipleSegue fName next)):xs) = do let x = typeOf initialisedEnv xs (findFunctionByNameRemap fName xs)
-                                                                            putStr ""
+                                                                            return $! x
                                     where initialisedEnv = initEnv [] (MainFuncDeclaration (SingleSegue fName):xs)
 executeTypeCheck _ = error "TODO NO VALID STRUCTURE?"
 
@@ -127,7 +127,7 @@ updateCheckEnvSegue env fs sourceFuncName fName (v:vs) (m:ms) | validAssignment 
                                      | otherwise = queueCheckInFuncEnv env fName (v, TInt)
                               vT = getVarType (getFuncEnv newEnv fName) v
                               mT = typeOfMaths newEnv sourceFuncName m
-                              validAssignment = vT == mT
+                              validAssignment = vT == mT && mT == TInt
 
 updateCheckEnvSegue _ _ _ _ _ _ = error "TODO"
 
