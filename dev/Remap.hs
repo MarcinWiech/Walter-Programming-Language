@@ -51,7 +51,8 @@ replaceOutWithSegue :: Exp_ -> String -> [String] -> Exp_
 replaceOutWithSegue (OutPatternExp p) nextfName vars = SegueToFunction nextfName vars (getMathsFromOutPattern p)
 replaceOutWithSegue (EqualsExp exp) nextfName vars = (EqualsExp exp)
 replaceOutWithSegue (SequenceExp exp1 exp2) nextfName vars = SequenceExp (replaceOutWithSegue exp1 nextfName vars ) (replaceOutWithSegue exp2 nextfName vars )
-replaceOutWithSegue (CondExp (Cond_ comp e e')) nextfName vars = CondExp (Cond_ comp (replaceOutWithSegue e nextfName vars) (replaceOutWithSegue e' nextfName vars))
+replaceOutWithSegue (CondExp (IfElseStmt comp e e')) nextfName vars = CondExp (IfElseStmt comp (replaceOutWithSegue e nextfName vars) (replaceOutWithSegue e' nextfName vars))
+replaceOutWithSegue (CondExp (IfStmt comp e)) nextfName vars = CondExp (IfStmt comp (replaceOutWithSegue e nextfName vars))
 
 getMathsFromOutPattern :: OutPattern_ -> [Maths_]
 getMathsFromOutPattern EmptyOutPatter = []

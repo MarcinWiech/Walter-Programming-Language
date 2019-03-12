@@ -2,9 +2,11 @@ DuplicateOneRow:
 { var1 : Int = 0; var3 : Bool = true; var4 : Bool = true;}
 [a : Int] = [0, 0];
 
-if ((a % 2 == 0) == var3) {
+if (a % 2 == 0 == var3) {
     var3 = !var3;
+    if(2 == 2){
     [1, 1];
+    }
 } else {
     [a, a];
     var3 = !var3;

@@ -113,7 +113,7 @@ action_15 _ = happyFail (happyExpListPerState 15)
 action_16 (35) = happyShift action_22
 action_16 _ = happyFail (happyExpListPerState 16)
 
-action_17 _ = happyReduce_52
+action_17 _ = happyReduce_53
 
 action_18 _ = happyReduce_3
 
@@ -164,9 +164,9 @@ action_30 _ = happyReduce_25
 action_31 (44) = happyShift action_48
 action_31 _ = happyFail (happyExpListPerState 31)
 
-action_32 _ = happyReduce_54
+action_32 _ = happyReduce_55
 
-action_33 _ = happyReduce_53
+action_33 _ = happyReduce_54
 
 action_34 _ = happyReduce_26
 
@@ -239,21 +239,21 @@ action_48 (12) = happyGoto action_31
 action_48 (21) = happyGoto action_53
 action_48 _ = happyFail (happyExpListPerState 48)
 
-action_49 _ = happyReduce_57
+action_49 _ = happyReduce_58
 
 action_50 (41) = happyShift action_52
 action_50 _ = happyFail (happyExpListPerState 50)
 
-action_51 _ = happyReduce_58
+action_51 _ = happyReduce_59
 
 action_52 (26) = happyShift action_50
 action_52 (59) = happyShift action_90
 action_52 (23) = happyGoto action_89
 action_52 _ = happyFail (happyExpListPerState 52)
 
-action_53 _ = happyReduce_56
+action_53 _ = happyReduce_57
 
-action_54 _ = happyReduce_55
+action_54 _ = happyReduce_56
 
 action_55 (24) = happyShift action_57
 action_55 (25) = happyShift action_58
@@ -465,9 +465,9 @@ action_88 (56) = happyShift action_97
 action_88 (57) = happyShift action_98
 action_88 _ = happyFail (happyExpListPerState 88)
 
-action_89 _ = happyReduce_60
+action_89 _ = happyReduce_61
 
-action_90 _ = happyReduce_59
+action_90 _ = happyReduce_60
 
 action_91 (38) = happyShift action_123
 action_91 _ = happyFail (happyExpListPerState 91)
@@ -694,7 +694,7 @@ action_129 (19) = happyGoto action_43
 action_129 _ = happyFail (happyExpListPerState 129)
 
 action_130 (46) = happyShift action_131
-action_130 _ = happyFail (happyExpListPerState 130)
+action_130 _ = happyReduce_52
 
 action_131 (38) = happyShift action_133
 action_131 _ = happyFail (happyExpListPerState 131)
@@ -1157,18 +1157,31 @@ happyReduction_51 (_ `HappyStk`
 	_ `HappyStk`
 	happyRest)
 	 = HappyAbsSyn19
-		 (Cond_ happy_var_3 happy_var_6 happy_var_10
+		 (IfElseStmt happy_var_3 happy_var_6 happy_var_10
 	) `HappyStk` happyRest
 
-happyReduce_52 = happySpecReduce_2  20 happyReduction_52
-happyReduction_52 _
+happyReduce_52 = happyReduce 7 19 happyReduction_52
+happyReduction_52 (_ `HappyStk`
+	(HappyAbsSyn6  happy_var_6) `HappyStk`
+	_ `HappyStk`
+	_ `HappyStk`
+	(HappyAbsSyn18  happy_var_3) `HappyStk`
+	_ `HappyStk`
+	_ `HappyStk`
+	happyRest)
+	 = HappyAbsSyn19
+		 (IfStmt happy_var_3 happy_var_6
+	) `HappyStk` happyRest
+
+happyReduce_53 = happySpecReduce_2  20 happyReduction_53
+happyReduction_53 _
 	_
 	 =  HappyAbsSyn20
 		 (EmptyInitArea
 	)
 
-happyReduce_53 = happyReduce 4 20 happyReduction_53
-happyReduction_53 (_ `HappyStk`
+happyReduce_54 = happyReduce 4 20 happyReduction_54
+happyReduction_54 (_ `HappyStk`
 	_ `HappyStk`
 	(HappyAbsSyn12  happy_var_2) `HappyStk`
 	_ `HappyStk`
@@ -1177,8 +1190,8 @@ happyReduction_53 (_ `HappyStk`
 		 (SingleInitArea happy_var_2
 	) `HappyStk` happyRest
 
-happyReduce_54 = happyReduce 4 20 happyReduction_54
-happyReduction_54 ((HappyAbsSyn21  happy_var_4) `HappyStk`
+happyReduce_55 = happyReduce 4 20 happyReduction_55
+happyReduction_55 ((HappyAbsSyn21  happy_var_4) `HappyStk`
 	_ `HappyStk`
 	(HappyAbsSyn12  happy_var_2) `HappyStk`
 	_ `HappyStk`
@@ -1187,26 +1200,26 @@ happyReduction_54 ((HappyAbsSyn21  happy_var_4) `HappyStk`
 		 (MultipleInitArea happy_var_2 happy_var_4
 	) `HappyStk` happyRest
 
-happyReduce_55 = happySpecReduce_3  21 happyReduction_55
-happyReduction_55 _
+happyReduce_56 = happySpecReduce_3  21 happyReduction_56
+happyReduction_56 _
 	_
 	(HappyAbsSyn12  happy_var_1)
 	 =  HappyAbsSyn21
 		 (SingleInitArea happy_var_1
 	)
-happyReduction_55 _ _ _  = notHappyAtAll 
+happyReduction_56 _ _ _  = notHappyAtAll 
 
-happyReduce_56 = happySpecReduce_3  21 happyReduction_56
-happyReduction_56 (HappyAbsSyn21  happy_var_3)
+happyReduce_57 = happySpecReduce_3  21 happyReduction_57
+happyReduction_57 (HappyAbsSyn21  happy_var_3)
 	_
 	(HappyAbsSyn12  happy_var_1)
 	 =  HappyAbsSyn21
 		 (MultipleInitArea happy_var_1 happy_var_3
 	)
-happyReduction_56 _ _ _  = notHappyAtAll 
+happyReduction_57 _ _ _  = notHappyAtAll 
 
-happyReduce_57 = happyReduce 7 22 happyReduction_57
-happyReduction_57 ((HappyAbsSyn23  happy_var_7) `HappyStk`
+happyReduce_58 = happyReduce 7 22 happyReduction_58
+happyReduction_58 ((HappyAbsSyn23  happy_var_7) `HappyStk`
 	_ `HappyStk`
 	(HappyTerminal (TokenFuncName _ happy_var_5)) `HappyStk`
 	_ `HappyStk`
@@ -1218,8 +1231,8 @@ happyReduction_57 ((HappyAbsSyn23  happy_var_7) `HappyStk`
 		 (MultipleSegue happy_var_5 happy_var_7
 	) `HappyStk` happyRest
 
-happyReduce_58 = happyReduce 7 22 happyReduction_58
-happyReduction_58 (_ `HappyStk`
+happyReduce_59 = happyReduce 7 22 happyReduction_59
+happyReduction_59 (_ `HappyStk`
 	_ `HappyStk`
 	(HappyTerminal (TokenFuncName _ happy_var_5)) `HappyStk`
 	_ `HappyStk`
@@ -1231,23 +1244,23 @@ happyReduction_58 (_ `HappyStk`
 		 (SingleSegue happy_var_5
 	) `HappyStk` happyRest
 
-happyReduce_59 = happySpecReduce_3  23 happyReduction_59
-happyReduction_59 _
+happyReduce_60 = happySpecReduce_3  23 happyReduction_60
+happyReduction_60 _
 	_
 	(HappyTerminal (TokenFuncName _ happy_var_1))
 	 =  HappyAbsSyn23
 		 (SingleSegue happy_var_1
 	)
-happyReduction_59 _ _ _  = notHappyAtAll 
+happyReduction_60 _ _ _  = notHappyAtAll 
 
-happyReduce_60 = happySpecReduce_3  23 happyReduction_60
-happyReduction_60 (HappyAbsSyn23  happy_var_3)
+happyReduce_61 = happySpecReduce_3  23 happyReduction_61
+happyReduction_61 (HappyAbsSyn23  happy_var_3)
 	_
 	(HappyTerminal (TokenFuncName _ happy_var_1))
 	 =  HappyAbsSyn23
 		 (MultipleSegue happy_var_1 happy_var_3
 	)
-happyReduction_60 _ _ _  = notHappyAtAll 
+happyReduction_61 _ _ _  = notHappyAtAll 
 
 happyNewToken action sts stk [] =
 	action 60 60 notHappyAtAll (HappyState action) sts stk []
@@ -1385,7 +1398,9 @@ data ComparableExp_ = EqualsTo ComparableExp_ ComparableExp_
                     | ComparableExpSingle Comparables_
                     deriving Show
 
-data Cond_ = Cond_ ComparableExp_ Exp_ Exp_ deriving Show
+data Cond_ = IfElseStmt ComparableExp_ Exp_ Exp_ 
+           | IfStmt ComparableExp_ Exp_ 
+           deriving Show
 
 data FuncBodyInitArea_ = EmptyInitArea
                        | SingleInitArea VarInit_

@@ -17,7 +17,6 @@ parseThisFile = do p <- getProgram
                    let t = remapOutputToSegue $ parseCalc $ alexScanTokens p
                    executeTypeCheck t
                    eval1_findMain t
-                   putStrLn "END"
 
 getProgram :: IO String
 getProgram = do s <- readFile "marcotest"
@@ -149,8 +148,10 @@ evalExp fName env funcs (OutPatternExp p) = do outPatternPrint fName env p
 evalExp fName env funcs (EqualsExp exp) = return $! evalEquals fName env exp
 evalExp fName env funcs (SequenceExp exp1 exp2) = do e <- evalExp fName env funcs exp1
                                                      evalExp fName e funcs exp2
-evalExp fName env funcs (CondExp (Cond_ comp e e')) | (evalComparableExp fName env comp) = (evalExp fName env funcs e)
-                                                    | otherwise = evalExp fName env funcs e'
+evalExp fName env funcs (CondExp (IfElseStmt comp e e')) | (evalComparableExp fName env comp) = (evalExp fName env funcs e)
+                                                         | otherwise = evalExp fName env funcs e'
+evalExp fName env funcs (CondExp (IfStmt comp e)) | (evalComparableExp fName env comp) = (evalExp fName env funcs e)
+                                                  | otherwise = return env
 evalExp fName env funcs (SegueToFunction nextFName nextVars nextMaths) = do let newEnv = matchUpdateEnv nextFName env nextVars (evalListMathsToListInts fName env nextMaths)
                                                                             evalExp nextFName newEnv funcs (getFunctionBody (findFunctionByName nextFName funcs))
 

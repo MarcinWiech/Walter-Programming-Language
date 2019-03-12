@@ -117,7 +117,8 @@ ComparableExp : ComparableExp '==' ComparableExp { EqualsTo $1 $3 }
               | '(' ComparableExp ')'            { $2 }
               | Comparables                      { ComparableExpSingle $1 }
                          
-Cond : if '(' ComparableExp ')' '{' Exp '}' else '{' Exp '}' { Cond_ $3 $6 $10 }
+Cond : if '(' ComparableExp ')' '{' Exp '}' else '{' Exp '}' { IfElseStmt $3 $6 $10 }
+     | if '(' ComparableExp ')' '{' Exp '}'                  { IfStmt $3 $6 }
 
 FuncBodyInitArea : '{''}'                               { EmptyInitArea }
                  | '{' VarInit ';' '}'                      { SingleInitArea $2 }
@@ -192,7 +193,9 @@ data ComparableExp_ = EqualsTo ComparableExp_ ComparableExp_
                     | ComparableExpSingle Comparables_
                     deriving Show
 
-data Cond_ = Cond_ ComparableExp_ Exp_ Exp_ deriving Show
+data Cond_ = IfElseStmt ComparableExp_ Exp_ Exp_ 
+           | IfStmt ComparableExp_ Exp_ 
+           deriving Show
 
 data FuncBodyInitArea_ = EmptyInitArea
                        | SingleInitArea VarInit_

@@ -3,6 +3,8 @@ import Tokens
 import Grammar
 import Remap
 
+import System.IO
+
 type TM = (String, [(String, T_)])
 type TE = [TM]
 
@@ -62,12 +64,10 @@ initEnv env (NormalFuncDeclaration fName initArea _:xs) | not envContains = init
 
 executeTypeCheck :: [FuncDeclaration_] -> IO ()
 executeTypeCheck ((MainFuncDeclaration (SingleSegue fName)):xs) = do let x = typeOf initialisedEnv xs (findFunctionByNameRemap fName xs)
-                                                                     putStrLn $ show initialisedEnv
-                                                                     putStrLn $ show x
+                                                                     putStr ""
                                     where initialisedEnv = initEnv [] (MainFuncDeclaration (SingleSegue fName):xs)
 executeTypeCheck ((MainFuncDeclaration (MultipleSegue fName next)):xs) = do let x = typeOf initialisedEnv xs (findFunctionByNameRemap fName xs)
-                                                                            putStrLn $ show x
-                                                                            putStrLn $ show initialisedEnv 
+                                                                            putStr ""
                                     where initialisedEnv = initEnv [] (MainFuncDeclaration (SingleSegue fName):xs)
 executeTypeCheck _ = error "TODO NO VALID STRUCTURE?"
 
@@ -94,11 +94,16 @@ typeOfMatch env fs fName (MultipleMatch var next) = typeOfMatch newEnv fs fName 
                             where newEnv = queueCheckInFuncEnv env fName (varToM var)
 
 typeOfExp :: TE -> [FuncDeclaration_] -> String -> Exp_ -> TE
-typeOfExp env fs fName (CondExp (Cond_ compExp exp exp')) | compExpType == TBool && expType == expType' = expType
-                                                          | otherwise = error "TODO"
-                                                        where compExpType = typeOfComparableExp env fName compExp
-                                                              expType = typeOfExp env fs fName exp
-                                                              expType' = typeOfExp env fs fName exp'
+typeOfExp env fs fName (CondExp (IfElseStmt compExp exp exp')) | compExpType == TBool && expType == expType' = expType
+                                                               | otherwise = error "TODO"
+                                                            where compExpType = typeOfComparableExp env fName compExp
+                                                                  expType = typeOfExp env fs fName exp
+                                                                  expType' = typeOfExp env fs fName exp'
+
+typeOfExp env fs fName (CondExp (IfStmt compExp exp)) | compExpType == TBool = expType
+                                                      | otherwise = error "TODO"
+                                                      where compExpType = typeOfComparableExp env fName compExp
+                                                            expType = typeOfExp env fs fName exp
 
 typeOfExp env fs fName (EqualsExp eqExp) = typeOfEqual env fName eqExp
 
