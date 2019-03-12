@@ -11,15 +11,17 @@ containsFunc fName [] = False
 containsFunc fName ((fName', _):xs) | fName == fName' = True
                                     | otherwise = containsFunc fName xs
 
+-- adds variables to environment as long as they dont repeat for the same function                                    
 queueCheckInFuncEnv :: TE -> String -> (String, T_) -> TE
 queueCheckInFuncEnv [] fName (var, t) = [(fName, [(var, t)])]
 queueCheckInFuncEnv ((fName, fEnv):xs) fName' (var, t) | fName == fName' =  (fName, (queueInFuncEnv  fEnv (var, t))) : xs
                                                        | otherwise = (fName, fEnv) : queueCheckInFuncEnv xs fName' (var, t)
-
+-- helper for queueCheckInFuncEnv
 queueInFuncEnv :: [(String, T_)] -> (String, T_) -> [(String, T_)]
 queueInFuncEnv [] (newVarName, newVarType) = [(newVarName, newVarType)]
 queueInFuncEnv ((varName, varType):xs) (newVarName, newVarType) | varName == newVarName = error "TODO"
                                                                 | otherwise = (varName, varType) : queueInFuncEnv xs (newVarName, newVarType)
+
 
 varInitToM :: VarInit_ -> (String, T_)
 varInitToM (VarIntInit_ (Var_ varName varType) _) = (varName, varType)
@@ -29,43 +31,63 @@ varToM :: Var_ -> (String, T_)
 varToM (Var_ varName varType) = (varName, varType)
 
 getVarType :: TM -> String -> T_
-getVarType (_, []) _ = error "TODO"
-getVarType ((_, ((varName, varType):xs))) varName' | varName == varName' = varType
+getVarType (fName, []) varName = error ("TODO" ++ fName ++ varName)
+getVarType ((fName, ((varName, varType):xs))) varName' | varName == varName' = varType
+                                                       | otherwise = getVarType (fName, xs) varName'
 
 getFuncEnv :: TE -> String -> TM
 getFuncEnv [] _ = error "TODO"
 getFuncEnv ((fName, fEnv):xs) fName' | fName == fName' = (fName, fEnv)
                                      | otherwise = getFuncEnv xs fName'
 
+isVarInFuncEnv :: [(String, T_)] -> String -> Bool
+isVarInFuncEnv [] _ = False
+isVarInFuncEnv ((varName, varType):xs) varName' | varName == varName' = True
+                                                | otherwise = isVarInFuncEnv xs varName'
+
 -----------------------------------------------------------------------------------------------------------
 
+-- initialises variables and checks for function repetition
+initEnv :: TE -> [FuncDeclaration_] -> TE
+initEnv env [] = env 
+initEnv env (MainFuncDeclaration _:xs) | not (containsFunc "Main" env) = initEnv newEnv xs
+                                         | otherwise = error "TODO"
+      where newEnv = ("Main", []):env
+initEnv env (NormalFuncDeclaration fName initArea _:xs) | not envContains = initEnv newEnv xs
+                                                          | otherwise = error "TODO"
+      where envContains = containsFunc fName env
+            newEnv = typeOfInit env fName initArea
+
 executeTypeCheck :: [FuncDeclaration_] -> IO ()
-executeTypeCheck ((MainFuncDeclaration (SingleSegue fName)):xs) = do let x = typeOf [] xs (findFunctionByNameRemap fName xs)
+executeTypeCheck ((MainFuncDeclaration (SingleSegue fName)):xs) = do let x = typeOf initialisedEnv xs (findFunctionByNameRemap fName xs)
+                                                                     putStrLn $ show initialisedEnv
                                                                      putStrLn $ show x
-executeTypeCheck ((MainFuncDeclaration (MultipleSegue fName next)):xs) = do let x = typeOf [] xs (findFunctionByNameRemap fName xs)
+                                    where initialisedEnv = initEnv [] (MainFuncDeclaration (SingleSegue fName):xs)
+executeTypeCheck ((MainFuncDeclaration (MultipleSegue fName next)):xs) = do let x = typeOf initialisedEnv xs (findFunctionByNameRemap fName xs)
                                                                             putStrLn $ show x
+                                                                            putStrLn $ show initialisedEnv 
+                                    where initialisedEnv = initEnv [] (MainFuncDeclaration (SingleSegue fName):xs)
 executeTypeCheck _ = error "TODO NO VALID STRUCTURE?"
 
 typeOf :: TE -> [FuncDeclaration_] -> FuncDeclaration_ -> TE
 typeOf _ _ (MainFuncDeclaration _ ) = error "TODO"
 typeOf env fs (NormalFuncDeclaration fName fInitArea fMatch) = newEnv''
-                                                             where newEnv | not $ containsFunc fName env = typeOfInit env fs fName fInitArea
-                                                                          | otherwise = env
-
-                                                                   newEnv' = typeOfMatch newEnv fs fName fMatch
+                                                             where newEnv' = typeOfMatch env fs fName fMatch
 
                                                                    thisFuncBody = getFunctionBody (NormalFuncDeclaration fName fInitArea fMatch)
                                                                    newEnv'' = typeOfExp newEnv' fs fName thisFuncBody
 
-typeOfInit :: TE -> [FuncDeclaration_] -> String -> FuncBodyInitArea_ -> TE
-typeOfInit env fs fName EmptyInitArea = (fName, []) : env
-typeOfInit env fs fName (SingleInitArea varInit) = queueCheckInFuncEnv env fName (varInitToM varInit)
-typeOfInit env fs fName (MultipleInitArea varInit next) = typeOfInit newEnv fs fName next
+-- initialises init area variables if they do not already exits in the environment
+typeOfInit :: TE -> String -> FuncBodyInitArea_ -> TE
+typeOfInit env fName EmptyInitArea = (fName, []) : env
+typeOfInit env fName (SingleInitArea varInit) = queueCheckInFuncEnv env fName (varInitToM varInit)
+typeOfInit env fName (MultipleInitArea varInit next) = typeOfInit newEnv fName next
                                                       where newEnv = queueCheckInFuncEnv env fName (varInitToM varInit)
 
+-- initialises variables of a any match, fails if variable already exist
 typeOfMatch :: TE -> [FuncDeclaration_] -> String -> Match_ -> TE
-typeOfMatch env fs fName (EmptyMatch _) = env
-typeOfMatch env fs fName (SingleMatch var exp) = queueCheckInFuncEnv env fName (varToM var)
+typeOfMatch env _ _ (EmptyMatch _) = env
+typeOfMatch env _ fName (SingleMatch var exp) = queueCheckInFuncEnv env fName (varToM var)
 typeOfMatch env fs fName (MultipleMatch var next) = typeOfMatch newEnv fs fName next
                             where newEnv = queueCheckInFuncEnv env fName (varToM var)
 
@@ -85,19 +107,22 @@ typeOfExp env fs fName (OutPatternExp outPattern) = typeOfOutPattern env fName o
 typeOfExp env fs fName (SegueToFunction fName' varNames maths) | length varNames == length maths = newEnv'
                                                                | otherwise = error "TODO 81"
                         where nextFunc = findFunctionByNameRemap fName' fs
-                              newEnv = updateCheckEnvSegue env fs fName' varNames maths
+                              newEnv = updateCheckEnvSegue env fs fName fName' varNames maths
                               newEnv' = typeOf newEnv fs nextFunc
 --helper for typeOfExp
-updateCheckEnvSegue :: TE -> [FuncDeclaration_] -> String -> [String] -> [Maths_] -> TE
-updateCheckEnvSegue env _ _ [] [] = env
+updateCheckEnvSegue :: TE -> [FuncDeclaration_] -> String -> String -> [String] -> [Maths_] -> TE
+updateCheckEnvSegue env _ _ _ [] [] = env
 
-updateCheckEnvSegue env fs fName (v:vs) (m:ms) | contains && (vT == mT) = updateCheckEnvSegue env fs fName vs ms
-                                               | otherwise = queueCheckInFuncEnv env fName (v,TInt)
-                        where contains = containsFunc fName env
-                              vT = getVarType (getFuncEnv env fName) v 
-                              mT = typeOfMaths env fName m
+updateCheckEnvSegue env fs sourceFuncName fName (v:vs) (m:ms) | validAssignment = updateCheckEnvSegue newEnv fs sourceFuncName fName vs ms
+                                                              | otherwise = error "TODO"
+                        where (_, fEnv) = getFuncEnv env fName
+                              newEnv | isVarInFuncEnv fEnv v = env
+                                     | otherwise = queueCheckInFuncEnv env fName (v, TInt)
+                              vT = getVarType (getFuncEnv newEnv fName) v
+                              mT = typeOfMaths newEnv sourceFuncName m
+                              validAssignment = vT == mT
 
-updateCheckEnvSegue _ _ _ _ _ = error "TODO"
+updateCheckEnvSegue _ _ _ _ _ _ = error "TODO"
 
 typeOfMaths :: TE-> String -> Maths_ -> T_
 typeOfMaths _ _ (MathsInt _) = TInt

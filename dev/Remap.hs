@@ -60,7 +60,7 @@ getMathsFromOutPattern (MultipleOutPattern m next) = m : getMathsFromOutPattern 
 
 findFunctionByNameRemap :: String -> [FuncDeclaration_] -> FuncDeclaration_
 findFunctionByNameRemap funcName ((NormalFuncDeclaration funcName' a b):ff) | funcName == funcName' = (NormalFuncDeclaration funcName' a b)
-                                                                       | otherwise = findFunctionByNameRemap funcName ff
+                                                                            | otherwise = findFunctionByNameRemap funcName ff
 matchVarsToVarnameList :: Match_ -> [String]
 matchVarsToVarnameList (EmptyMatch _) = []
 matchVarsToVarnameList (SingleMatch (Var_ name _) _) = [name]

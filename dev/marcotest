@@ -1,5 +1,5 @@
 DuplicateOneRow:
-{ var1 : Int = 0; }
+{ var1 : Int = 0; var3 : Int = false; }
 [a : Int] = [a, -a];
 
 Times:

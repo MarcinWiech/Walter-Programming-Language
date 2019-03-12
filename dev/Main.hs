@@ -6,7 +6,6 @@ import TypeChecker
 import System.Environment
 import Control.Exception
 import System.IO
-import System.IO.Unsafe (unsafePerformIO)
 import System.IO (isEOF)
 
 main :: IO ()
@@ -19,10 +18,6 @@ parseThisFile = do p <- getProgram
                    executeTypeCheck t
                    eval1_findMain t
                    putStrLn "END"
-
-
--- parseThisFile = parseThis getProgram
--- parseThis s = eval1_findMain $ executeTypeCheck $ remapOutputToSegue $ parseCalc $ alexScanTokens s
 
 getProgram :: IO String
 getProgram = do s <- readFile "marcotest"
