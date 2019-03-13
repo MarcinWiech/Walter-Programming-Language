@@ -2,7 +2,6 @@ module TypeChecker where
 import Tokens
 import Grammar
 import Remap
-
 import System.IO
 
 type TM = (String, [(String, T_)])
@@ -50,6 +49,15 @@ isVarInFuncEnv ((varName, varType):xs) varName' | varName == varName' = True
                                                 | otherwise = isVarInFuncEnv xs varName'
 
 -----------------------------------------------------------------------------------------------------------
+
+checkAllFuncsBeforeRemap :: [FuncDeclaration_] -> IO TE
+checkAllFuncsBeforeRemap ((MainFuncDeclaration main) : xs) = checkAllFuncs (initEnv [] xs) xs
+checkAllFuncsBeforeRemap _ = error "TODO"
+
+checkAllFuncs :: TE -> [FuncDeclaration_] -> IO TE
+checkAllFuncs env [] = return $! env
+checkAllFuncs env (x:xs) = do let newEnv = typeOf env (x:xs) x
+                              checkAllFuncs newEnv xs
 
 -- initialises variables and checks for function repetition
 initEnv :: TE -> [FuncDeclaration_] -> TE
@@ -142,6 +150,7 @@ typeOfMaths env fName (MathsMinus x y) = typeOfMaths env fName (MathsPlus x y)
 typeOfMaths env fName (MathsTimes x y) = typeOfMaths env fName (MathsPlus x y)
 typeOfMaths env fName (MathsDevide x y) = typeOfMaths env fName (MathsPlus x y)
 typeOfMaths env fName (MathsMod x y) = typeOfMaths env fName (MathsPlus x y)
+typeOfMaths env fName (MathsPower x y) = typeOfMaths env fName (MathsPlus x y)
 typeOfMaths env fName (MathsNegative x) | xType == TInt = TInt
                                         | otherwise = error "TODO"
                                              where xType = typeOfMaths env fName x

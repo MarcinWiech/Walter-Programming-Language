@@ -16,7 +16,8 @@ import Tokens
     '+'        { TokenPlus _ } 
     '-'        { TokenMinus _ } 
     '*'        { TokenTimes _ }
-    '%'        { TokenMod _ }  
+    '%'        { TokenMod _ } 
+    '^'        { TokenPower _ } 
     '/'        { TokenDiv _ } 
     '('        { TokenLParen _ } 
     ')'        { TokenRParen _ }
@@ -48,7 +49,7 @@ import Tokens
     stdout     { TokenStdout _ }
 
 %right ';'
-%left '+' '-' '*' '/' '<' '>' '==' '!' '>>' '%' '&&' '||'
+%left '+' '-' '*' '/' '<' '>' '==' '!' '>>' '%' '&&' '||' '^'
 %nonassoc if else eof intType boolType main trueValue falseValue stdin stdout ':' '(' ')' '[' ']' ',' '{' '}' '<=' '>='
 
 %%
@@ -71,6 +72,7 @@ Maths : Maths '+' Maths      { MathsPlus $1 $3 }
       | Maths '*' Maths      { MathsTimes $1 $3 }
       | Maths '/' Maths      { MathsDevide $1 $3 }
       | Maths '%' Maths      { MathsMod $1 $3 }
+      | Maths '^' Maths      { MathsPower $1 $3 }
       | '(' Maths ')'        { $2 }
       | '-' Maths            { MathsNegative $2 }
       | intValue             { MathsInt $1 }
@@ -165,6 +167,7 @@ data Maths_ = MathsPlus Maths_ Maths_
             | MathsTimes Maths_ Maths_
             | MathsDevide Maths_ Maths_
             | MathsMod Maths_ Maths_
+            | MathsPower Maths_ Maths_
             | MathsNegative Maths_
             | MathsInt Int
             | MathsVar String

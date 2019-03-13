@@ -1,22 +1,10 @@
 DuplicateOneRow:
 { var1 : Int = 0; var3 : Bool = true; var4 : Bool = true;}
-[a : Int] = [0, 0];
-
-if (true) {
-    var3 = !var3;
-    if(2 == 2){
-    [1, var3];
-    }
-} else {
-    [0, 0];                  
-    var3 = !var3;
-   
-}
-
+[a : Int, b : Int] = [2^(-a), 0];
 
 Times:
 {var1 : Int = 3;}
-[c : Int, d : Int] = [c*var1, d*10]
+[c : Int, d : Int] = [c, d*10*100]
 
 Main:
     stdin >> DuplicateOneRow >> Times >> stdout

@@ -2,37 +2,36 @@ import Tokens
 import Grammar
 import Remap
 import TypeChecker
-
 import System.Environment
-import Control.Exception
-import System.IO
 import System.IO (isEOF)
 
 main :: IO ()
-main = parseThisFile    
+main = parseThisFile
 
 
 parseThisFile :: IO ()
 parseThisFile = do p <- getProgram
-                   let t = remapOutputToSegue $ parseCalc $ alexScanTokens p
-                   executeTypeCheck t
-                   eval1_findMain t
+                   let tree = parseCalc $ alexScanTokens p
+                   tree' <- checkAllFuncsBeforeRemap $! tree
+                   let t = remapOutputToSegue $! tree
+                   _ <- executeTypeCheck $! t
+                   eval1_findMain $! t
 
 getProgram :: IO String
-getProgram = do s <- readFile "marcotest"
-                return s
+getProgram = do (fileName: _ ) <- getArgs
+                readFile fileName
 
 data M = MInt String Int | MBool String Bool deriving (Show, Eq)
 type E = [(String,[M])]
 
 getFunctionEnvironment :: String -> E -> [M]
-getFunctionEnvironment fName [] = []
+getFunctionEnvironment _ [] = []
 getFunctionEnvironment fName ((fName', vars):xs) | fName' == fName = vars
                                                  | otherwise = getFunctionEnvironment fName xs
 
 envInit :: [FuncDeclaration_] -> E
 envInit [] = []
-envInit ((NormalFuncDeclaration funcName initArea _):xs) = (funcName, (envInitNoFunctionName initArea)) : envInit xs
+envInit (NormalFuncDeclaration funcName initArea _:xs) = (funcName, (envInitNoFunctionName initArea)) : envInit xs
 
 replaceFuncEnv :: String -> E -> [M] -> E
 replaceFuncEnv fName ((fName', old):xs) new | fName == fName' = (fName, new) : xs
@@ -47,15 +46,15 @@ envInitNoFunctionName (MultipleInitArea (VarIntInit_ (Var_ name _) value) next) 
 envInitNoFunctionName (MultipleInitArea (VarBoolInit_ (Var_ name _) value) next) = (MBool name value) : envInitNoFunctionName next
 
 envContains :: String -> E -> String -> Bool
-envContains fName [] name = False 
+envContains _ [] _ = False 
 envContains fName env name = envContainsInner (getFunctionEnvironment fName env) name
 
 envContainsInner :: [M] -> String -> Bool
 envContainsInner [] _ = False
-envContainsInner ((MInt name _) : xs) name' | name == name' = True
-                                            | otherwise = envContainsInner xs name'
-envContainsInner ((MBool name _) : xs) name' | name == name' = True
-                                             | otherwise = envContainsInner xs name'
+envContainsInner (MInt name _ : xs) name' | name == name' = True
+                                          | otherwise = envContainsInner xs name'
+envContainsInner (MBool name _ : xs) name' | name == name' = True
+                                           | otherwise = envContainsInner xs name'
 
 envGetVar :: String -> E -> String -> M
 envGetVar fName env name = envGetVarInner (getFunctionEnvironment fName env) name
@@ -99,9 +98,9 @@ envUpdateOrAppendInner (x:xs) m = x : envUpdateOrAppendInner xs m
 
 eval1_findMain :: [FuncDeclaration_] -> IO () -- FuncDeclaration_
 eval1_findMain (MainFuncDeclaration (SingleSegue funcname):ss) = evalFunction funcname (envInit ss) ss match
-                                                                 where (NormalFuncDeclaration fname initArea match) = findFunctionByName funcname ss
+                                                                 where (NormalFuncDeclaration _ _ match) = findFunctionByName funcname ss
 eval1_findMain ((MainFuncDeclaration (MultipleSegue funcname next)):ss) = evalFunction funcname (envInit ss) ss match -- TODO!
-                                                                          where (NormalFuncDeclaration fname initArea match) = findFunctionByName funcname ss
+                                                                          where (NormalFuncDeclaration _ initArea match) = findFunctionByName funcname ss
 
 findFunctionByName :: String -> [FuncDeclaration_] -> FuncDeclaration_
 findFunctionByName funcName ((NormalFuncDeclaration funcName' a b):ff) | funcName == funcName' = (NormalFuncDeclaration funcName' a b)
@@ -143,9 +142,9 @@ evalEquals fName env (Equals_ varName (ComparableExpSingle (ComparablesMaths mat
 evalEquals fName env (Equals_ varName comparable) = envUpdateOrAppend fName env (MBool varName (evalComparableExp fName env comparable))
 
 evalExp :: String -> E -> [FuncDeclaration_] -> Exp_ -> IO E
-evalExp fName env funcs (OutPatternExp p) = do outPatternPrint fName env p
-                                               return env
-evalExp fName env funcs (EqualsExp exp) = return $! evalEquals fName env exp
+evalExp fName env _ (OutPatternExp p) = do outPatternPrint fName env p
+                                           return env
+evalExp fName env _ (EqualsExp exp) = return $! evalEquals fName env exp
 evalExp fName env funcs (SequenceExp exp1 exp2) = do e <- evalExp fName env funcs exp1
                                                      evalExp fName e funcs exp2
 evalExp fName env funcs (CondExp (IfElseStmt comp e e')) | (evalComparableExp fName env comp) = (evalExp fName env funcs e)
@@ -180,13 +179,15 @@ evalMaths fName env (MathsPlus (MathsInt x) (MathsInt y)) = MathsInt (x+y)
 evalMaths fName env (MathsMinus (MathsInt x) (MathsInt y)) = MathsInt (x-y)
 evalMaths fName env (MathsTimes (MathsInt x) (MathsInt y)) = MathsInt (x*y)
 evalMaths fName env (MathsDevide (MathsInt x) (MathsInt y)) = MathsInt (x `div` y)
-evalMaths fName env (MathsMod (MathsInt x) (MathsInt y)) = MathsInt (x `mod` y) 
+evalMaths fName env (MathsMod (MathsInt x) (MathsInt y)) = MathsInt (x `mod` y)
+evalMaths fName env (MathsPower (MathsInt x) (MathsInt y)) = MathsInt (x^y)  
 
 evalMaths fName env (MathsPlus x y) = evalMaths fName env (MathsPlus (evalMaths fName env x) (evalMaths fName env y))  
 evalMaths fName env (MathsMinus x y) = evalMaths fName env (MathsMinus (evalMaths fName env x) (evalMaths fName env y)) 
 evalMaths fName env (MathsTimes x y) = evalMaths fName env (MathsTimes (evalMaths fName env x) (evalMaths fName env y))  
 evalMaths fName env (MathsDevide x y) = evalMaths fName env (MathsDevide (evalMaths fName env x) (evalMaths fName env y))
 evalMaths fName env (MathsMod x y) = evalMaths fName env (MathsMod (evalMaths fName env x) (evalMaths fName env y))  
+evalMaths fName env (MathsPower x y) = evalMaths fName env (MathsPower (evalMaths fName env x) (evalMaths fName env y))
 
 outPatternPrint :: String -> E -> OutPattern_ -> IO ()
 outPatternPrint fName env EmptyOutPatter = putStr $! ""
