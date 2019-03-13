@@ -1369,7 +1369,11 @@ parseError (t:ts) = error ("Parse error at line:column " ++ (tokenPosn t))
 
 data SuperExp = Func
 
-data T_ = TInt | TBool deriving (Show, Eq)
+data T_ = TInt | TBool deriving (Eq)
+
+instance Show T_ where
+      show (TInt) = "Int"
+      show (TBool) = "Bool"
 
 data Var_ = Var_ String T_ deriving Show
 

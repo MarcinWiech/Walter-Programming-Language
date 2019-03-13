@@ -12,7 +12,7 @@ $alpha = [a-zA-Z]
 
 tokens :-
 $white+       ; 
-  "--".*        ; 
+  "#".*        ; 
   $digit+       { tok (\p s -> TokenIntValue p (read s)) } 
   \=            { tok (\p s -> TokenEq p) }
   \+            { tok (\p s -> TokenPlus p) }
