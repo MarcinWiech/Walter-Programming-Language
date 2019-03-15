@@ -2,19 +2,21 @@ DuplicateOneRow:
 { var1 : Int = 0; var3 : Bool = true; var4 : Bool = false;}
 [a : Int, b : Int] =
 if(true){
-  [a,var3];
+  [a,3];
 }
 else{
-  var4 = 3;
+  var4 = !var4;
 }
 
 Times:
 {var1 : Int = 3;}
 [c : Int, d : Int] = [c, d*10*100]
 
-# this is 16526532146531465
+# Coursework Problems
+
+
 Main:
-    stdin >> DuplicateOneRow >> Times >> stdout
+    stdin >> DuplicateOn1eRow >> Times >> stdout
 
 
 # check Main function calls in typechec

@@ -2,9 +2,20 @@ Problem1:
 {
     var1 : Int = 0;
 }
-[a : Int, b : Int] = 
-            var1 = b*3;
-            [-a-(-2), -b*3];
+[a : Int] = [a-1];
+
+Problem2:
+{}
+[a : Int] = [a, a];
+
+Problem3:
+{}
+[a : Int, b : Int] = [a + 3*b];
+
+Problem4:
+{ sum : Int = 0;}
+[a : Int] = sum = sum + a;
+            [sum];
 
 Problem5: 
 {
@@ -17,70 +28,5 @@ x : Int = 0;
                var1 = var2;
 	           var2 = x;
 
-
-
-MotherFakka:
-{
-    is : Bool = true;
-}
-[a : Int] = if (is) 
-            {
-                if(a % 2 == 0)
-                {
-                    [a];
-                }
-                else
-                {
-                    [a+1000];
-                }
-                is = (2 == a);
-            } 
-            else {
-                [0]; 
-                is = true;
-            }
-
-TestMod:
-{}
-[a : Int] = if(3 >= 2 && 3<= 2){
-    a = 100;
-}
-else {
-    [a % 2];
-}
-
-
-What:
-{
-    a1 : Int = 0;
-    a2 : Int = 0;
-    a3 : Int = 0;
-
-    c : Int = 0;
-}
-[x : Int] = 
-if (c == 2)
-{
-    [a1, a2, x];
-    c = 0;
-}
-else {
-    if (c == 0)
-    {
-        a1 = x;
-    }
-    else {
-        if (c == 1)
-        {
-            a2 = x;
-        }
-        else {
-            a3 = x;
-        }
-    }
-    c = c + 1;
-}
-
-
 Main:
-    stdin >> Problem2 >> stdout
+    stdin >> Problem5 >> stdout

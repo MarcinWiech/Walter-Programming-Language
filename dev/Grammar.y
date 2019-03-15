@@ -12,13 +12,19 @@ import Tokens
     var        { TokenVar _ $$ }
     funcName   { TokenFuncName _ $$ }
      
-    '='        { TokenEq _ } 
+    '&&'       { TokenAnd _ }
+    '||'       { TokenOr _ }
+    '=='       { TokenCompare _ }
+    '>='       { TokenGreaterOrEqual _ }
+    '<='       { TokenSmallerOrEqual _ }
+    '='        { TokenEq _ }
     '+'        { TokenPlus _ } 
-    '-'        { TokenMinus _ } 
+    '-'        { TokenMinus _ }
     '*'        { TokenTimes _ }
-    '%'        { TokenMod _ } 
-    '^'        { TokenPower _ } 
     '/'        { TokenDiv _ } 
+    '%'        { TokenMod _ } 
+    '^'        { TokenPower _ }
+    '!'        { TokenNot _ }  
     '('        { TokenLParen _ } 
     ')'        { TokenRParen _ }
 
@@ -37,19 +43,18 @@ import Tokens
     main       { TokenMain _ }
     trueValue  { TokenTrueValue _ }
     falseValue { TokenFalseValue _ }
-    '=='       { TokenCompare _ }
-    '>='       { TokenGreaterOrEqual _ }
-    '<='       { TokenSmallerOrEqual _ }
-    '&&'       { TokenAnd _ }
-    '||'       { TokenOr _ }
-    '!'        { TokenNot _ }
     '<'        { TokenSmallerThan _ }
     '>'        { TokenGreaterThan _ }
     stdin      { TokenStdin _ }
     stdout     { TokenStdout _ }
 
 %right ';'
-%left '+' '-' '*' '/' '<' '>' '==' '!' '>>' '%' '&&' '||' '^'
+%left '&&' '||'
+%left '==' '>>'
+%left '<' '>'
+%left '+' '-'  
+%left '*' '/' '%'
+%left '!' '^'
 %nonassoc if else eof intType boolType main trueValue falseValue stdin stdout ':' '(' ')' '[' ']' ',' '{' '}' '<=' '>='
 
 %%

@@ -52,16 +52,29 @@ isVarInFuncEnv ((varName, varType):xs) varName' | varName == varName' = True
 
 
 -----------------------------------------------------------------------------------------------------------
-
+--check all declared functions
 checkAllFuncsBeforeRemap :: [FuncDeclaration_] -> IO TE
-checkAllFuncsBeforeRemap (MainFuncDeclaration _ : xs) = checkAllFuncs (initEnv [] xs) xs
+checkAllFuncsBeforeRemap (MainFuncDeclaration main : xs) | checkMain xs main = checkAllFuncs (initEnv [] xs) xs
 checkAllFuncsBeforeRemap _ = error "[Error] Main function missing or not placed at the end"
 
---helper for checkAllFuncsBeforeRemap
+--helper for checkAllFuncsBeforeRemaps
 checkAllFuncs :: TE -> [FuncDeclaration_] -> IO TE
 checkAllFuncs env [] = return $! env
 checkAllFuncs env (x:xs) = do let newEnv = typeOf env (x:xs) x
                               checkAllFuncs newEnv xs
+
+-- check if main contains valid funcions                              
+checkMain :: [FuncDeclaration_] -> Main_ -> Bool
+checkMain fs (SingleSegue fName) = containsFuncDecl fName fs
+checkMain fs (MultipleSegue fName next) | containsFuncDecl fName fs = checkMain fs next
+                                        | otherwise = error("[Error] No instance of function " ++ fName ++ " in Main funcion declaration.")
+
+--helper for checkMain                                                              
+containsFuncDecl :: String -> [FuncDeclaration_] -> Bool
+containsFuncDecl funcName [] = False
+containsFuncDecl funcName ((NormalFuncDeclaration funcName' a b):ff) | funcName == funcName' = True
+                                                                     | otherwise = containsFuncDecl funcName ff
+containsFuncDecl _ _ = error "[Error] Multiple declarations of Main function"
 
 -- initialises variables and checks for function repetition
 initEnv :: TE -> [FuncDeclaration_] -> TE
