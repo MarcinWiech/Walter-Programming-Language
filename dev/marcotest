@@ -12,11 +12,28 @@ Times:
 {var1 : Int = 3;}
 [c : Int, d : Int] = [c, d*10*100]
 
-# Coursework Problems
+A:
+{
+  var1 : Bool = true;
+}
+[a : Int] = [var1];
+            var1 = !var1;
+
+B:
+{
+  var1 : Bool = true;
+}
+[a : Bool] = 
+if(a){
+[3];
+}
+else{
+  [2];
+}
 
 
 Main:
-    stdin >> DuplicateOn1eRow >> Times >> stdout
+    stdin >> A >> B >> stdout
 
 
 # check Main function calls in typechec

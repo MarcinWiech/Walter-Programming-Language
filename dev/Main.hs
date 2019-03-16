@@ -188,7 +188,8 @@ evalMaths fName env (MathsNegative (MathsInt int)) = (MathsInt (-int))
 evalMaths fName env (MathsNegative maths) = evalMaths fName env (MathsNegative (evalMaths fName env maths))
 evalMaths fName env (MathsVar name) = convert (envGetVar fName env name)
                          where convert (MInt _ v) = MathsInt v
-
+                               convert (MBool _ True) = MathsInt 1
+                               convert (MBool _ False) = MathsInt 0             
 evalMaths fName env (MathsPlus (MathsInt x) (MathsInt y)) = MathsInt (x+y) 
 evalMaths fName env (MathsMinus (MathsInt x) (MathsInt y)) = MathsInt (x-y)
 evalMaths fName env (MathsTimes (MathsInt x) (MathsInt y)) = MathsInt (x*y)
