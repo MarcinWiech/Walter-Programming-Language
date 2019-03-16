@@ -37,6 +37,12 @@ replaceFuncEnv :: String -> E -> [M] -> E
 replaceFuncEnv fName ((fName', old):xs) new | fName == fName' = (fName, new) : xs
                                             | otherwise = (fName', old):(replaceFuncEnv fName xs new)
 
+getMValueInt :: M -> Int
+getMValueInt (MInt _ v) = v                                            
+
+getMValueBool :: M -> Bool
+getMValueBool (MBool _ v) = v   
+
 --helper for envInit
 envInitNoFunctionName :: FuncBodyInitArea_ -> [M]
 envInitNoFunctionName EmptyInitArea = []
@@ -151,22 +157,30 @@ evalExp fName env funcs (CondExp (IfElseStmt comp e e')) | (evalComparableExp fN
                                                          | otherwise = evalExp fName env funcs e'
 evalExp fName env funcs (CondExp (IfStmt comp e)) | (evalComparableExp fName env comp) = (evalExp fName env funcs e)
                                                   | otherwise = return env
-evalExp fName env funcs (SegueToFunction nextFName nextVars nextMaths) = do let newEnv = matchUpdateEnv nextFName env nextVars (evalListMathsToListInts fName env nextMaths)
-                                                                            evalExp nextFName newEnv funcs (getFunctionBody (findFunctionByName nextFName funcs))
+evalExp fName env funcs (SegueToFunction nextFName nextVars comps) = do let newEnv = matchUpdateEnv nextFName env nextVars (evalComparablesToListInts fName env comps)
+                                                                        evalExp nextFName newEnv funcs (getFunctionBody (findFunctionByName nextFName funcs))
 
-matchUpdateEnv :: String -> E -> [String] -> [Int] -> E
+matchUpdateEnv :: String -> E -> [Var_] -> [Int] -> E
 matchUpdateEnv fName env [] _ = env
 matchUpdateEnv fName env nn [] = env
-matchUpdateEnv fName env (n:nn) (i:ii) = matchUpdateEnv fName (envUpdateOrAppend fName env (MInt n i)) nn ii
+matchUpdateEnv fName env ((Var_ n TInt):vv) (i:ii) = matchUpdateEnv fName (envUpdateOrAppend fName env (MInt n i)) vv ii
+matchUpdateEnv fName env ((Var_ n TBool):vv) (i:ii) | i == 0 = matchUpdateEnv fName (envUpdateOrAppend fName env (MBool n False)) vv ii
+                                                    | otherwise = matchUpdateEnv fName (envUpdateOrAppend fName env (MBool n True)) vv ii
 
 matchIntFromStdio :: IO [Int]
 matchIntFromStdio =  do line <- getLine
                         return $ (map read $ words line :: [Int])
 
-evalListMathsToListInts :: String -> E -> [Maths_] -> [Int]
-evalListMathsToListInts fName env [] = []
-evalListMathsToListInts fName env (x:xs) = (convert $ evalMaths fName env x):(evalListMathsToListInts fName env xs)
-            where convert (MathsInt v) = v
+evalComparablesToListInts :: String -> E -> [Comparables_] -> [Int]
+evalComparablesToListInts fName env [] = []
+evalComparablesToListInts fName env (x:xs) = (evalComparables fName env x):(evalComparablesToListInts fName env xs)
+
+
+evalComparables :: String -> E -> Comparables_ -> Int
+evalComparables fName env (ComparablesMaths m) = v
+                                                where (MathsInt v) = evalMaths fName env m
+evalComparables fName env (ComparablesBool True) = 1
+evalComparables fName env (ComparablesBool False) = 0
 
 evalMaths :: String -> E -> Maths_ -> Maths_
 evalMaths fName env (MathsInt int) = (MathsInt int)
@@ -192,34 +206,42 @@ evalMaths fName env (MathsPower x y) = evalMaths fName env (MathsPower (evalMath
 outPatternPrint :: String -> E -> OutPattern_ -> IO ()
 outPatternPrint fName env EmptyOutPatter = putStr $! ""
 
-outPatternPrint fName env (SingleOutPattern (MathsInt i)) = do putStr $! show i
-                                                               putStrLn $! ""
-outPatternPrint fName env (SingleOutPattern (MathsVar name)) = do putStr $! printMvalue $! envGetVar fName env name
-                                                                  putStrLn $! ""
+outPatternPrint fName env (SingleOutPattern (ComparablesBool b)) = if b then putStrLn $! "1" else putStrLn $! "0" 
 
-outPatternPrint fName env (MultipleOutPattern (MathsInt i) (SingleOutPattern next)) = do putStr $! show i
+outPatternPrint fName env (SingleOutPattern (ComparablesMaths (MathsInt i))) = do putStr $! show i
+                                                                                  putStrLn $! ""
+outPatternPrint fName env (SingleOutPattern (ComparablesMaths (MathsVar name))) = do let varValue = envGetVar fName env name
+                                                                                     putStr $! printMvalue $! varValue
+                                                                                     putStrLn $! ""
+
+outPatternPrint fName env (MultipleOutPattern (ComparablesMaths (MathsInt i)) (SingleOutPattern next)) = do putStr $! show i
+                                                                                                            putStr $! " "
+                                                                                                            outPatternPrint fName env (SingleOutPattern next)
+
+outPatternPrint fName env (MultipleOutPattern  (ComparablesMaths (MathsVar name)) (SingleOutPattern next)) = do putStr $! printMvalue $! envGetVar fName env name
+                                                                                                                putStr $! " "
+                                                                                                                outPatternPrint fName env (SingleOutPattern next)
+
+outPatternPrint fName env (MultipleOutPattern (ComparablesMaths (MathsInt i)) next) = do putStr $! show i
                                                                                          putStr $! " "
-                                                                                         outPatternPrint fName env (SingleOutPattern next)
+                                                                                         outPatternPrint fName env next
 
-outPatternPrint fName env (MultipleOutPattern (MathsVar name) (SingleOutPattern next)) = do putStr $! printMvalue $! envGetVar fName env name
-                                                                                            putStr $! " "
-                                                                                            outPatternPrint fName env (SingleOutPattern next)
+outPatternPrint fName env (MultipleOutPattern  (ComparablesMaths (MathsVar name)) next) = do putStr $! printMvalue $! envGetVar fName env name
+                                                                                             putStr $! " "
+                                                                                             outPatternPrint fName env next
 
-outPatternPrint fName env (MultipleOutPattern (MathsInt i) next) = do putStr $! show i
-                                                                      putStr $! " "
-                                                                      outPatternPrint fName env next
-
-outPatternPrint fName env (MultipleOutPattern (MathsVar name) next) = do putStr $! printMvalue $! envGetVar fName env name
-                                                                         putStr $! " "
-                                                                         outPatternPrint fName env next
-
-outPatternPrint fName env (SingleOutPattern maths) = outPatternPrint fName env (SingleOutPattern (evalMaths fName env maths))
-outPatternPrint fName env (MultipleOutPattern maths next) = outPatternPrint fName env (MultipleOutPattern (evalMaths fName env maths) next)
+outPatternPrint fName env (SingleOutPattern (ComparablesMaths maths)) = outPatternPrint fName env (SingleOutPattern (ComparablesMaths (evalMaths fName env maths)))
+outPatternPrint fName env (MultipleOutPattern (ComparablesMaths maths) next) = outPatternPrint fName env (MultipleOutPattern (ComparablesMaths (evalMaths fName env maths)) next)
 
 
 printMvalue :: M -> String
 printMvalue (MInt _ v) = show v
-printMvalue (MBool _ v) = show v
+printMvalue (MBool _ v) | v = "1"
+                        | otherwise = "0"
+
+getVarT_ :: M -> T_
+getVarT_ (MInt _ _) = TInt
+getVarT_ (MBool _ _) = TBool
 
 evalComparableExp :: String -> E -> ComparableExp_ -> Bool
 evalComparableExp fName env (ComparableExpSingle (ComparablesBool bool)) = bool
@@ -230,11 +252,7 @@ evalComparableExp fName env (ComparableExpSingle (ComparablesMaths (MathsVar s))
 evalComparableExp fName env (EqualsTo  (ComparableExpSingle (ComparablesMaths (MathsInt a))) (ComparableExpSingle (ComparablesMaths (MathsInt b))) ) = a == b
 evalComparableExp fName env (EqualsTo (ComparableExpSingle (ComparablesMaths (MathsVar a))) (ComparableExpSingle (ComparablesMaths (MathsVar b))) ) | isIntTop = (extractIntFromEnv fName env a) == (extractIntFromEnv fName env b)
                                                                                                                                                     | otherwise = (extractBoolFromEnv fName env a) == (extractBoolFromEnv fName env b)
-                                                                                                                                                    where getVarT_ :: M -> T_
-                                                                                                                                                          getVarT_ (MInt _ _) = TInt
-                                                                                                                                                          getVarT_ (MBool _ _) = TBool
-
-                                                                                                                                                          aType = getVarT_ (envGetVar fName env a)
+                                                                                                                                                    where aType = getVarT_ (envGetVar fName env a)
                                                                                                                                                           bType = getVarT_ (envGetVar fName env b)
                                                                                                                                                           isIntTop = aType == bType  && aType == TInt
 evalComparableExp fName env (EqualsTo  (ComparableExpSingle (ComparablesBool  a)) (ComparableExpSingle (ComparablesBool b)) ) = a == b

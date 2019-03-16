@@ -47,23 +47,23 @@ getFunctionNames :: Main_ -> [String]
 getFunctionNames (SingleSegue fName) = [fName]
 getFunctionNames (MultipleSegue fName next) = fName : getFunctionNames next
 
-replaceOutWithSegue :: Exp_ -> String -> [String] -> Exp_
-replaceOutWithSegue (OutPatternExp p) nextfName vars = SegueToFunction nextfName vars (getMathsFromOutPattern p)
+replaceOutWithSegue :: Exp_ -> String -> [Var_] -> Exp_
+replaceOutWithSegue (OutPatternExp p) nextfName vars = SegueToFunction nextfName vars (getComparablesFromOutputPattern p)
 replaceOutWithSegue (EqualsExp exp) nextfName vars = (EqualsExp exp)
 replaceOutWithSegue (SequenceExp exp1 exp2) nextfName vars = SequenceExp (replaceOutWithSegue exp1 nextfName vars ) (replaceOutWithSegue exp2 nextfName vars )
 replaceOutWithSegue (CondExp (IfElseStmt comp e e')) nextfName vars = CondExp (IfElseStmt comp (replaceOutWithSegue e nextfName vars) (replaceOutWithSegue e' nextfName vars))
 replaceOutWithSegue (CondExp (IfStmt comp e)) nextfName vars = CondExp (IfStmt comp (replaceOutWithSegue e nextfName vars))
 
-getMathsFromOutPattern :: OutPattern_ -> [Maths_]
-getMathsFromOutPattern EmptyOutPatter = []
-getMathsFromOutPattern (SingleOutPattern m) = [m]
-getMathsFromOutPattern (MultipleOutPattern m next) = m : getMathsFromOutPattern next
+getComparablesFromOutputPattern :: OutPattern_ -> [Comparables_]
+getComparablesFromOutputPattern EmptyOutPatter = []
+getComparablesFromOutputPattern (SingleOutPattern m) = [m]
+getComparablesFromOutputPattern (MultipleOutPattern m next) = m : getComparablesFromOutputPattern next
 
 findFunctionByNameRemap :: String -> [FuncDeclaration_] -> FuncDeclaration_
 findFunctionByNameRemap funcName ((NormalFuncDeclaration funcName' a b):ff) | funcName == funcName' = (NormalFuncDeclaration funcName' a b)
                                                                             | otherwise = findFunctionByNameRemap funcName ff
-matchVarsToVarnameList :: Match_ -> [String]
+matchVarsToVarnameList :: Match_ -> [Var_]
 matchVarsToVarnameList (EmptyMatch _) = []
-matchVarsToVarnameList (SingleMatch (Var_ name _) _) = [name]
-matchVarsToVarnameList (MultipleMatch (Var_ name _) next) = name : matchVarsToVarnameList next
+matchVarsToVarnameList (SingleMatch var _) = [var]
+matchVarsToVarnameList (MultipleMatch var next) = var : matchVarsToVarnameList next
 

@@ -97,18 +97,18 @@ VarInit : Var '=' intValue { VarIntInit_ $1 $3}
         | Var '=' B        { VarBoolInit_ $1 $3}
 
 Match : '['']' '=' Exp                      { EmptyMatch $4 }
-      | '[' var ':' intType ']' '=' Exp     { SingleMatch (Var_ $2 TInt) $7 }
-      | '[' var ':' intType ',' MatchRec    { MultipleMatch (Var_ $2 TInt) $6 }
+      | '[' var ':' T ']' '=' Exp     { SingleMatch (Var_ $2 $4) $7 }
+      | '[' var ':' T ',' MatchRec    { MultipleMatch (Var_ $2 $4) $6 }
 
-MatchRec : var ':' intType ']' '=' Exp      { SingleMatch (Var_ $1 TInt) $6 }
-         | var ':' intType ',' MatchRec     { MultipleMatch (Var_ $1 TInt) $5 }
+MatchRec : var ':' T ']' '=' Exp      { SingleMatch (Var_ $1 $3) $6 }
+         | var ':' T ',' MatchRec     { MultipleMatch (Var_ $1 $3) $5 }
 
 OutPattern : '['']'                         { EmptyOutPatter }
-           | '[' Maths ',' OutPatternRec    { MultipleOutPattern $2 $4 }
-           | '[' Maths ']'                  { SingleOutPattern $2 }
+           | '[' Comparables ',' OutPatternRec    { MultipleOutPattern $2 $4 }
+           | '[' Comparables ']'                  { SingleOutPattern $2 }
            
-OutPatternRec : Maths ']'                   { SingleOutPattern $1 }
-              | Maths ',' OutPatternRec     { MultipleOutPattern $1 $3 }
+OutPatternRec : Comparables ']'                   { SingleOutPattern $1 }
+              | Comparables ',' OutPatternRec     { MultipleOutPattern $1 $3 }
 
 Comparables : Maths       { ComparablesMaths $1 }
             | B           { ComparablesBool $1 }
@@ -168,7 +168,7 @@ data Exp_ = CondExp Cond_
           | EqualsExp Equals_
           | OutPatternExp OutPattern_
           | SequenceExp Exp_ Exp_
-          | SegueToFunction String [String] [Maths_]
+          | SegueToFunction String [Var_] [Comparables_]
           deriving Show
 
 data Maths_ = MathsPlus Maths_ Maths_
@@ -183,8 +183,8 @@ data Maths_ = MathsPlus Maths_ Maths_
             deriving Show
 
 data OutPattern_ = EmptyOutPatter
-                 | MultipleOutPattern Maths_ OutPattern_ 
-                 | SingleOutPattern Maths_
+                 | MultipleOutPattern Comparables_ OutPattern_ 
+                 | SingleOutPattern Comparables_
                  deriving Show
 
 data Equals_ = Equals_ String ComparableExp_

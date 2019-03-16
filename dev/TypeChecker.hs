@@ -136,23 +136,23 @@ typeOfExp env fs fName (SequenceExp x y) = (typeOfExp (typeOfExp env fs fName x)
 
 typeOfExp env fs fName (OutPatternExp outPattern) = typeOfOutPattern env fName outPattern
 
-typeOfExp env fs fName (SegueToFunction fName' varNames maths) | length varNames == length maths = newEnv'
+typeOfExp env fs fName (SegueToFunction fName' vars maths) | length vars == length maths = newEnv'
                                                                | otherwise = error ("[Error] Could not match output of " ++ fName ++ " with input of " ++ fName' ++ ". Different number of arguments")
                         where nextFunc = findFunctionByNameRemap fName' fs
-                              newEnv = updateCheckEnvSegue env fs fName fName' varNames maths
+                              newEnv = updateCheckEnvSegue env fs fName fName' vars maths
                               newEnv' = typeOf newEnv fs nextFunc
 --helper for typeOfExp
-updateCheckEnvSegue :: TE -> [FuncDeclaration_] -> String -> String -> [String] -> [Maths_] -> TE
+updateCheckEnvSegue :: TE -> [FuncDeclaration_] -> String -> String -> [Var_] -> [Comparables_] -> TE
 updateCheckEnvSegue env _ _ _ [] [] = env
 
-updateCheckEnvSegue env fs sourceFuncName fName (v:vs) (m:ms) | validAssignment = updateCheckEnvSegue newEnv fs sourceFuncName fName vs ms
+updateCheckEnvSegue env fs sourceFuncName fName ((Var_ v t):vs) (c:cs) | validAssignment = updateCheckEnvSegue newEnv fs sourceFuncName fName vs cs
                                                               | otherwise = error ("[Error] Invalid statement in output of " ++ sourceFuncName)
                         where (_, fEnv) = getFuncEnv env fName
                               newEnv | isVarInFuncEnv fEnv v = env
-                                     | otherwise = queueCheckInFuncEnv env fName (v, TInt)
+                                     | otherwise = queueCheckInFuncEnv env fName (v, t)
                               vT = getVarType (getFuncEnv newEnv fName) v
-                              mT = typeOfMaths newEnv sourceFuncName m
-                              validAssignment = vT == mT && mT == TInt
+                              mT = typeOfComparables newEnv sourceFuncName c
+                              validAssignment = vT == mT
 
 updateCheckEnvSegue _ _ sourceFuncName fName _ _ = error ("[Error] Invalid pipe statement between " ++ sourceFuncName ++ " >> " ++ fName)
 
@@ -214,10 +214,10 @@ typeOfEqual env fName (Equals_ varName compExp) | varType == compExpType = env
 
 typeOfOutPattern :: TE -> String -> OutPattern_ -> TE
 typeOfOutPattern env _ EmptyOutPatter = env
-typeOfOutPattern env fName (SingleOutPattern maths) | xType == TInt = env
+typeOfOutPattern env fName (SingleOutPattern maths) | xType == TInt || xType == TBool = env
                                                     | otherwise = error ("[Error] Could not output " ++ show xType ++ " in output of function " ++ fName)
-                                                    where xType = typeOfMaths env fName maths
-typeOfOutPattern env fName (MultipleOutPattern maths next) | xType == TInt = typeOfOutPattern env fName next
+                                                    where xType = typeOfComparables env fName maths
+typeOfOutPattern env fName (MultipleOutPattern maths next) | xType == TInt || xType == TBool = typeOfOutPattern env fName next
                                                            | otherwise = error ("[Error] Could not output " ++ show xType ++ " in output of function " ++ fName)
-                                                           where xType = typeOfMaths env fName maths
+                                                           where xType = typeOfComparables env fName maths
                                             
