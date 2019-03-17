@@ -54,7 +54,7 @@ replaceOutWithSegue (SequenceExp exp1 exp2) nextfName vars = SequenceExp (replac
 replaceOutWithSegue (CondExp (IfElseStmt comp e e')) nextfName vars = CondExp (IfElseStmt comp (replaceOutWithSegue e nextfName vars) (replaceOutWithSegue e' nextfName vars))
 replaceOutWithSegue (CondExp (IfStmt comp e)) nextfName vars = CondExp (IfStmt comp (replaceOutWithSegue e nextfName vars))
 
-getComparablesFromOutputPattern :: OutPattern_ -> [Comparables_]
+getComparablesFromOutputPattern :: OutPattern_ -> [ComparableExp_]
 getComparablesFromOutputPattern EmptyOutPatter = []
 getComparablesFromOutputPattern (SingleOutPattern m) = [m]
 getComparablesFromOutputPattern (MultipleOutPattern m next) = m : getComparablesFromOutputPattern next

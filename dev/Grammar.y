@@ -104,11 +104,11 @@ MatchRec : var ':' T ']' '=' Exp      { SingleMatch (Var_ $1 $3) $6 }
          | var ':' T ',' MatchRec     { MultipleMatch (Var_ $1 $3) $5 }
 
 OutPattern : '['']'                         { EmptyOutPatter }
-           | '[' Comparables ',' OutPatternRec    { MultipleOutPattern $2 $4 }
-           | '[' Comparables ']'                  { SingleOutPattern $2 }
+           | '[' ComparableExp ',' OutPatternRec    { MultipleOutPattern $2 $4 }
+           | '[' ComparableExp ']'                  { SingleOutPattern $2 }
            
-OutPatternRec : Comparables ']'                   { SingleOutPattern $1 }
-              | Comparables ',' OutPatternRec     { MultipleOutPattern $1 $3 }
+OutPatternRec : ComparableExp ']'                   { SingleOutPattern $1 }
+              | ComparableExp ',' OutPatternRec     { MultipleOutPattern $1 $3 }
 
 Comparables : Maths       { ComparablesMaths $1 }
             | B           { ComparablesBool $1 }
@@ -168,7 +168,7 @@ data Exp_ = CondExp Cond_
           | EqualsExp Equals_
           | OutPatternExp OutPattern_
           | SequenceExp Exp_ Exp_
-          | SegueToFunction String [Var_] [Comparables_]
+          | SegueToFunction String [Var_] [ComparableExp_]
           deriving Show
 
 data Maths_ = MathsPlus Maths_ Maths_
@@ -183,8 +183,8 @@ data Maths_ = MathsPlus Maths_ Maths_
             deriving Show
 
 data OutPattern_ = EmptyOutPatter
-                 | MultipleOutPattern Comparables_ OutPattern_ 
-                 | SingleOutPattern Comparables_
+                 | MultipleOutPattern ComparableExp_ OutPattern_ 
+                 | SingleOutPattern ComparableExp_
                  deriving Show
 
 data Equals_ = Equals_ String ComparableExp_

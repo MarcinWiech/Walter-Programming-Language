@@ -30,4 +30,4 @@ x : Int = 0;
 	           var2 = x;
 
 Main:
-    stdin >> Problem5 >> stdout
+    stdin >> Problem4 >> stdout

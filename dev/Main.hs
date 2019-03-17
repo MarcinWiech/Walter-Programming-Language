@@ -171,16 +171,17 @@ matchIntFromStdio :: IO [Int]
 matchIntFromStdio =  do line <- getLine
                         return $ (map read $ words line :: [Int])
 
-evalComparablesToListInts :: String -> E -> [Comparables_] -> [Int]
+evalComparablesToListInts :: String -> E -> [ComparableExp_] -> [Int]
 evalComparablesToListInts fName env [] = []
-evalComparablesToListInts fName env (x:xs) = (evalComparables fName env x):(evalComparablesToListInts fName env xs)
+evalComparablesToListInts fName env (x:xs) = (evalOutputExpressions fName env x):(evalComparablesToListInts fName env xs)
 
 
-evalComparables :: String -> E -> Comparables_ -> Int
-evalComparables fName env (ComparablesMaths m) = v
+evalOutputExpressions :: String -> E -> ComparableExp_ -> Int
+evalOutputExpressions fName env (ComparableExpSingle(ComparablesMaths m)) = v
                                                 where (MathsInt v) = evalMaths fName env m
-evalComparables fName env (ComparablesBool True) = 1
-evalComparables fName env (ComparablesBool False) = 0
+evalOutputExpressions fName env (ComparableExpSingle (ComparablesBool True)) = 1
+evalOutputExpressions fName env (ComparableExpSingle (ComparablesBool False)) = 0
+evalOutputExpressions fName env exp = evalOutputExpressions fName env (ComparableExpSingle (ComparablesBool (evalComparableExp fName env exp)))
 
 evalMaths :: String -> E -> Maths_ -> Maths_
 evalMaths fName env (MathsInt int) = (MathsInt int)
@@ -207,33 +208,35 @@ evalMaths fName env (MathsPower x y) = evalMaths fName env (MathsPower (evalMath
 outPatternPrint :: String -> E -> OutPattern_ -> IO ()
 outPatternPrint fName env EmptyOutPatter = putStr $! ""
 
-outPatternPrint fName env (SingleOutPattern (ComparablesBool b)) = if b then putStrLn $! "1" else putStrLn $! "0" 
+outPatternPrint fName env (SingleOutPattern (ComparableExpSingle (ComparablesBool b))) = if b then putStrLn $! "1" else putStrLn $! "0" 
 
-outPatternPrint fName env (SingleOutPattern (ComparablesMaths (MathsInt i))) = do putStr $! show i
-                                                                                  putStrLn $! ""
-outPatternPrint fName env (SingleOutPattern (ComparablesMaths (MathsVar name))) = do let varValue = envGetVar fName env name
-                                                                                     putStr $! printMvalue $! varValue
-                                                                                     putStrLn $! ""
+outPatternPrint fName env (SingleOutPattern (ComparableExpSingle (ComparablesMaths (MathsInt i)))) = do putStr $! show i
+                                                                                                        putStrLn $! ""
+outPatternPrint fName env (SingleOutPattern (ComparableExpSingle (ComparablesMaths (MathsVar name)))) = do let varValue = envGetVar fName env name
+                                                                                                           putStr $! printMvalue $! varValue
+                                                                                                           putStrLn $! ""
 
-outPatternPrint fName env (MultipleOutPattern (ComparablesMaths (MathsInt i)) (SingleOutPattern next)) = do putStr $! show i
-                                                                                                            putStr $! " "
-                                                                                                            outPatternPrint fName env (SingleOutPattern next)
+outPatternPrint fName env (MultipleOutPattern (ComparableExpSingle (ComparablesMaths (MathsInt i))) (SingleOutPattern next)) = do putStr $! show i
+                                                                                                                                  putStr $! " "
+                                                                                                                                  outPatternPrint fName env (SingleOutPattern next)
 
-outPatternPrint fName env (MultipleOutPattern  (ComparablesMaths (MathsVar name)) (SingleOutPattern next)) = do putStr $! printMvalue $! envGetVar fName env name
-                                                                                                                putStr $! " "
-                                                                                                                outPatternPrint fName env (SingleOutPattern next)
+outPatternPrint fName env (MultipleOutPattern  (ComparableExpSingle (ComparablesMaths (MathsVar name))) (SingleOutPattern next)) = do putStr $! printMvalue $! envGetVar fName env name
+                                                                                                                                      putStr $! " "
+                                                                                                                                      outPatternPrint fName env (SingleOutPattern next)
 
-outPatternPrint fName env (MultipleOutPattern (ComparablesMaths (MathsInt i)) next) = do putStr $! show i
-                                                                                         putStr $! " "
-                                                                                         outPatternPrint fName env next
+outPatternPrint fName env (MultipleOutPattern (ComparableExpSingle (ComparablesMaths (MathsInt i))) next) = do putStr $! show i
+                                                                                                               putStr $! " "
+                                                                                                               outPatternPrint fName env next
 
-outPatternPrint fName env (MultipleOutPattern  (ComparablesMaths (MathsVar name)) next) = do putStr $! printMvalue $! envGetVar fName env name
-                                                                                             putStr $! " "
-                                                                                             outPatternPrint fName env next
+outPatternPrint fName env (MultipleOutPattern  (ComparableExpSingle (ComparablesMaths (MathsVar name))) next) = do putStr $! printMvalue $! envGetVar fName env name
+                                                                                                                   putStr $! " "
+                                                                                                                   outPatternPrint fName env next
 
-outPatternPrint fName env (SingleOutPattern (ComparablesMaths maths)) = outPatternPrint fName env (SingleOutPattern (ComparablesMaths (evalMaths fName env maths)))
-outPatternPrint fName env (MultipleOutPattern (ComparablesMaths maths) next) = outPatternPrint fName env (MultipleOutPattern (ComparablesMaths (evalMaths fName env maths)) next)
+outPatternPrint fName env (SingleOutPattern (ComparableExpSingle (ComparablesMaths maths))) = outPatternPrint fName env (SingleOutPattern (ComparableExpSingle (ComparablesMaths (evalMaths fName env maths))))
+outPatternPrint fName env (MultipleOutPattern (ComparableExpSingle (ComparablesMaths maths)) next) = outPatternPrint fName env (MultipleOutPattern (ComparableExpSingle (ComparablesMaths (evalMaths fName env maths))) next)
 
+outPatternPrint fName env (SingleOutPattern compExp) = outPatternPrint fName env (SingleOutPattern (ComparableExpSingle (ComparablesBool (evalComparableExp fName env compExp))))
+outPatternPrint fName env (MultipleOutPattern compExp next) = outPatternPrint fName env (MultipleOutPattern (ComparableExpSingle (ComparablesBool (evalComparableExp fName env compExp))) next)
 
 printMvalue :: M -> String
 printMvalue (MInt _ v) = show v

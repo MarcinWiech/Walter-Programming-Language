@@ -16,7 +16,7 @@ A:
 {
   var1 : Bool = true;
 }
-[a : Int] = [var1];
+[a : Int] = [false];
             var1 = !var1;
 
 B:
@@ -31,7 +31,7 @@ else{
   [2];
 }
 
-
+#return comparableExps
 Main:
     stdin >> A >> B >> stdout
 

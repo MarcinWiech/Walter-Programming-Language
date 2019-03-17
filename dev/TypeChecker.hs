@@ -142,7 +142,7 @@ typeOfExp env fs fName (SegueToFunction fName' vars maths) | length vars == leng
                               newEnv = updateCheckEnvSegue env fs fName fName' vars maths
                               newEnv' = typeOf newEnv fs nextFunc
 --helper for typeOfExp
-updateCheckEnvSegue :: TE -> [FuncDeclaration_] -> String -> String -> [Var_] -> [Comparables_] -> TE
+updateCheckEnvSegue :: TE -> [FuncDeclaration_] -> String -> String -> [Var_] -> [ComparableExp_] -> TE
 updateCheckEnvSegue env _ _ _ [] [] = env
 
 updateCheckEnvSegue env fs sourceFuncName fName ((Var_ v t):vs) (c:cs) | validAssignment = updateCheckEnvSegue newEnv fs sourceFuncName fName vs cs
@@ -151,7 +151,7 @@ updateCheckEnvSegue env fs sourceFuncName fName ((Var_ v t):vs) (c:cs) | validAs
                               newEnv | isVarInFuncEnv fEnv v = env
                                      | otherwise = queueCheckInFuncEnv env fName (v, t)
                               vT = getVarType (getFuncEnv newEnv fName) v
-                              mT = typeOfComparables newEnv sourceFuncName c
+                              mT = typeOfComparableExp newEnv sourceFuncName c
                               validAssignment = vT == mT
 
 updateCheckEnvSegue _ _ sourceFuncName fName _ _ = error ("[Error] Invalid pipe statement between " ++ sourceFuncName ++ " >> " ++ fName)
@@ -216,8 +216,8 @@ typeOfOutPattern :: TE -> String -> OutPattern_ -> TE
 typeOfOutPattern env _ EmptyOutPatter = env
 typeOfOutPattern env fName (SingleOutPattern maths) | xType == TInt || xType == TBool = env
                                                     | otherwise = error ("[Error] Could not output " ++ show xType ++ " in output of function " ++ fName)
-                                                    where xType = typeOfComparables env fName maths
+                                                    where xType = typeOfComparableExp env fName maths
 typeOfOutPattern env fName (MultipleOutPattern maths next) | xType == TInt || xType == TBool = typeOfOutPattern env fName next
                                                            | otherwise = error ("[Error] Could not output " ++ show xType ++ " in output of function " ++ fName)
-                                                           where xType = typeOfComparables env fName maths
+                                                           where xType = typeOfComparableExp env fName maths
                                             
