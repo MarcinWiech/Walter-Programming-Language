@@ -1,0 +1,7 @@
+Problem4:
+	{ sum : Int = 0; }
+	[a : Int] -> sum = sum + a;
+				 [sum];
+            
+Main:
+    stdin >> Problem4 >> stdout

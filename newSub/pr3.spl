@@ -1,0 +1,6 @@
+Problem3:
+	{}
+	[a : Int, b : Int] -> [a + 3*b];
+
+Main:
+    stdin >> Problem3 >> stdout

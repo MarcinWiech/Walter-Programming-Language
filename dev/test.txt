@@ -2,21 +2,21 @@ Problem1:
 {
     var1 : Int = 0;
 }
-[a : Int] = [var1];
+[a : Int] -> [var1];
             var1 = a;
 
 Problem2:
 {}
-[a : Int] = [a, a];
+[a : Int] -> [a, a];
 
 Problem3:
 {}
-[a : Int, b : Int] = [a + 3*b];
+[a : Int, b : Int] -> [a + 3*b];
 
 Problem4:
 { sum : Int = 0;}
-[a : Int] = sum = sum + a;
-            [sum];
+[a : Int] -> sum = sum + a;
+            [sum, (sum == 1 || sum == 15)];
 
 Problem5: 
 {
@@ -24,10 +24,14 @@ var1 : Int = 0;
 var2 : Int = 0;
 x : Int = 0;
 }
-[a : Int] = x = var1 + var2 + a;
-               [var1 + var2 + a];
-               var1 = var2;
-	           var2 = x;
+[a : Int, b : Bool] -> x = var1 + var2 + a;
+                      if (!b) {
+                        [var1 + var2 + a];
+                      } else {
+                          [-1, b];
+                      }
+                      var1 = var2;
+                      var2 = x;
 
 Main:
-    stdin >> Problem4 >> stdout
+    stdin >> Problem4 >> Problem5 >> stdout
