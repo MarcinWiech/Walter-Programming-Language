@@ -1,37 +1,45 @@
-Problem1:
+Problem6:
 {
     var1 : Int = 0;
 }
-[a : Int] -> [var1];
+[a : Int] -> [a,var1];
             var1 = a;
 
-Problem2:
+Problem7:
 {}
-[a : Int] -> [a, a];
+[a : Int, b : Int] -> [a-b, a];
 
-Problem3:
-{}
-[a : Int, b : Int] -> [a + 3*b];
+Problem8:
+{
+    var1 : Int = 0;
+}
+[a : Int] -> [a + var1];
+           var1 = a;
 
-Problem4:
-{ sum : Int = 0;}
-[a : Int] -> sum = sum + a;
-            [sum, (sum == 1 || sum == 15)];
+Problem9:
+{
+    previous : Int = 0;
+    accumulator : Int = 0;
+}
+[a : Int] -> previous = a + previous + accumulator;
+             accumulator = accumulator + a;
+             [previous];
 
-Problem5: 
+Problem10: 
 {
 var1 : Int = 0;
 var2 : Int = 0;
-x : Int = 0;
+x : Bool = true;
 }
-[a : Int, b : Bool] -> x = var1 + var2 + a;
-                      if (!b) {
-                        [var1 + var2 + a];
-                      } else {
-                          [-1, b];
-                      }
-                      var1 = var2;
-                      var2 = x;
+[a : Int] -> if(x){
+                var1 = a + var1;
+                [var1];
+             }
+             else{
+                var2 = a + var2;
+                [var2];
+             }
+             x = !x;
 
 Main:
-    stdin >> Problem4 >> Problem5 >> stdout
+    stdin >> Problem1 >> stdout
