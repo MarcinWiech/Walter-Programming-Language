@@ -1,0 +1,5 @@
+Problem7: {}
+[a : Int, b : Int] -> [a-b, a];
+
+Main:
+    stdin >> Problem7 >> stdout

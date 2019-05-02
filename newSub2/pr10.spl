@@ -1,0 +1,17 @@
+Problem10: 
+{
+    var1 : Int = 0;
+    var2 : Int = 0;
+    x : Bool = true;
+}
+[a : Int] -> if(x){
+                var1 = a + var1;
+                [var1];
+             } else{
+                var2 = a + var2;
+                [var2];
+             }
+             x = !x;
+
+Main:
+    stdin >> Problem10 >> stdout

@@ -1,6 +1,5 @@
-Problem2:
-	{}
-	[a : Int] -> [a, a];
+Problem2: {}
+[a : Int] -> [a, a];
 
 Main:
     stdin >> Problem2 >> stdout

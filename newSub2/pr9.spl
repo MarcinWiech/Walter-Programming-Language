@@ -1,0 +1,12 @@
+Problem9:
+{
+    previous : Int = 0; 
+    accumulator : Int = 0;
+}
+
+[a : Int] -> previous = a + previous + accumulator;
+             accumulator = accumulator + a;
+             [previous];
+             
+Main:
+    stdin >> Problem9 >> stdout
