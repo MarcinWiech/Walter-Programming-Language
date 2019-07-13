@@ -4,7 +4,7 @@ Programming language operating on potentially unbounded streams of integers.
 
 ## Installation
 
-Language is built in Haskell hence to install you will need ghc compiler.
+Language is built in Haskell hence to install you will need: <b>ghc compiler</b>, lexical analyzer <b>alex</b> and parser generator <b>happy</b>.
 
 Download walter_1.0 directory then run the following command inside.
 
