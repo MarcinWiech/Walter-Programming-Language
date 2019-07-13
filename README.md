@@ -14,7 +14,7 @@ make
 In order to run a program type the following.
 
 ```bash
-./myinterpreter <your_file> < <your input>
+./myinterpreter <your_file> < <your_input>
 ```
 
 ## Example
