@@ -11,6 +11,11 @@ Download walter_1.0 directory then run the following command inside.
 ```bash
 make
 ```
+In order to run a program type the following.
+
+```bash
+./myinterpreter <your_file> < <your input>
+```
 
 ## Example
 
@@ -29,14 +34,14 @@ Example1: {}
                        }
 ```
 
-To run use the main function
+To run the function place it inside Main.
 
 ```haskell
 Main:
      stdin >> Example1 >> stdout
 ```
 
-Example input and output
+Example input and output.
 
 ```haskell
 Input:  Output:
